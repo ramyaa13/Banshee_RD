@@ -341,6 +341,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 267006477}
   m_CullTransparentMesh: 1
+--- !u!1 &424108988
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 424108989}
+  m_Layer: 0
+  m_Name: ObjectContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &424108989
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 424108988}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -10952,16 +10983,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tilemap: {fileID: 1461728310}
   ObjectPrefabs:
-  - {fileID: 4108988202488995371, guid: 80d656777b1882c4faadfd7ebc7f3cac, type: 3}
   - {fileID: 4534375144445141982, guid: e2e2b9b9ecfc0684d82be40d928201c6, type: 3}
   - {fileID: 5316528755029453307, guid: 2b26e4f93e339c64a965a745d6671cdc, type: 3}
+  - {fileID: 1213350685067273269, guid: 4f3a6406521dfca4c88d78ac88aed79e, type: 3}
+  WeaponPrefabs:
+  - {fileID: 3523705640776218034, guid: 2b4bcd85dbf19734ea944d2c2877811a, type: 3}
+  - {fileID: 4108988202488995371, guid: 80d656777b1882c4faadfd7ebc7f3cac, type: 3}
+  - {fileID: 2712490401141736791, guid: b5c04ea79e134d347877e34f48f4ae60, type: 3}
+  - {fileID: 5737252004061082738, guid: db3f6324c2781264a9384958ac89dbf7, type: 3}
   - {fileID: 2712490401141736791, guid: b5c04ea79e134d347877e34f48f4ae60, type: 3}
   ShieldProbablity: 0.2
   SprintShoesProbablity: 0.1
-  GemProbablity: 0.5
-  MaxObjects: 20
+  MaxObjects: 15
+  MaxWeaponObjects: 6
   ShieldLifeTime: 10
   SpawnInterval: 0.5
+  OverallObjects: []
+  ObjectContainer: {fileID: 424108989}
+  WeaponContainer: {fileID: 1911695071}
 --- !u!4 &1901856071
 Transform:
   m_ObjectHideFlags: 0
@@ -10972,6 +11011,37 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 2.8333592, y: 15.565155, z: 0.57573736}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1911695070
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1911695071}
+  m_Layer: 0
+  m_Name: WeaponContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1911695071
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1911695070}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11224,3 +11294,5 @@ SceneRoots:
   - {fileID: 1694412790}
   - {fileID: 753037176}
   - {fileID: 1901856071}
+  - {fileID: 1911695071}
+  - {fileID: 424108989}

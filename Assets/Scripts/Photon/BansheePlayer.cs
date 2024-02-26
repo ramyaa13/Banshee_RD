@@ -25,6 +25,7 @@ public class BansheePlayer : MonoBehaviourPun
     private PlayerMovementController playerMovementController;
 
     public WeaponController gunEquipController;
+    public HealthController healthController;
 
     public bool DisableInputs = false;
 
@@ -61,6 +62,7 @@ public class BansheePlayer : MonoBehaviourPun
     {
         gunEquipController = GetComponent<WeaponController>();
         playerMovementController = GetComponent<PlayerMovementController>();
+        healthController = GetComponent<HealthController>();
     }
 
     // Update is called once per frame
@@ -159,8 +161,15 @@ public class BansheePlayer : MonoBehaviourPun
             ScoreUpdate();
             coin = collision.gameObject;
             PhotonView photonView = PhotonView.Get(this);
-            photonView.RPC("CoinCollected", RpcTarget.AllBuffered);
-            //Debug.Log("Coin Destroyed");
+            photonView.RPC("RPC_GemCollected", RpcTarget.AllBuffered);
+        }
+
+        if(collision.gameObject.tag == "Shield")
+        {
+            coin = collision.gameObject;
+            PhotonView photonView = PhotonView.Get(this);
+            healthController.photonView.RPC("ShieldHealth", RpcTarget.AllBuffered);
+            photonView.RPC("RPC_GemCollected", RpcTarget.AllBuffered);
         }
     }
 
@@ -176,11 +185,18 @@ public class BansheePlayer : MonoBehaviourPun
     
 
     [PunRPC]
-    public void CoinCollected()
+    public void RPC_GemCollected()
     {
         Destroy(coin);
         //Debug.Log("Coin Destroyed and synced");
     }
 
-   
+    [PunRPC]
+    public void RPC_ShieldCollected()
+    {
+        Destroy(coin);
+        //Debug.Log("Coin Destroyed and synced");
+    }
+
+
 }
