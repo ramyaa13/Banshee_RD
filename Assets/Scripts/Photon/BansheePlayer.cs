@@ -161,19 +161,42 @@ public class BansheePlayer : MonoBehaviourPun
             ScoreUpdate();
             coin = collision.gameObject;
             PhotonView photonView = PhotonView.Get(this);
-            photonView.RPC("RPC_GemCollected", RpcTarget.AllBuffered);
+            if (PhotonNetwork.IsMasterClient)
+            {
+                GemCollected(coin);
+            }
+            else
+            {
+                int viewID = collision.GetComponent<PhotonView>().ViewID;
+                Debug.Log("ViewID of gem: " + viewID);
+                photonView.RPC("RPC_GemCollected", RpcTarget.MasterClient, viewID);
+
+            }
         }
 
-        if(collision.gameObject.tag == "Shield")
-        {
-            coin = collision.gameObject;
-            PhotonView photonView = PhotonView.Get(this);
-            healthController.photonView.RPC("ShieldHealth", RpcTarget.AllBuffered);
-            photonView.RPC("RPC_GemCollected", RpcTarget.AllBuffered);
-        }
+        //if(collision.gameObject.tag == "Shield")
+        //{
+        //    coin = collision.gameObject;
+        //    PhotonView photonView = PhotonView.Get(this);
+        //    healthController.photonView.RPC("ShieldHealth", RpcTarget.AllBuffered);
+        //    photonView.RPC("RPC_GemCollected", RpcTarget.MasterClient);
+        //}
     }
 
-    
+    public void GemCollected(GameObject Gem)
+    {
+        Gamemanager.instance.GRemoveSO(Gem);
+        Gamemanager.instance.GRemoveOO(Gem);
+        PhotonNetwork.Destroy(Gem);
+    }
+
+    [PunRPC]
+    public void RPC_GemCollected(int viewId)
+    {
+        PhotonNetwork.Destroy(PhotonView.Find(viewId).gameObject);
+        //Debug.Log("Coin Destroyed and synced");
+    }
+
     public void ScoreUpdate()
     {
         if (photonView.IsMine)
@@ -184,14 +207,6 @@ public class BansheePlayer : MonoBehaviourPun
 
     
 
-    [PunRPC]
-    public void RPC_GemCollected()
-    {
-        Gamemanager.instance.GRemoveSO(coin);
-        Gamemanager.instance.GRemoveOO(coin);
-        Destroy(coin);
-        //Debug.Log("Coin Destroyed and synced");
-    }
 
    
 

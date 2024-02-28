@@ -193,7 +193,8 @@ public class WeaponController : MonoBehaviour
                 //EnableGunWeapon(weaponId);
                 Debug.Log(weaponId + "wid");
                 photonView.RPC("EnableGunWeapon", RpcTarget.AllBuffered, weaponId);
-                photonView.RPC("WeaponEquippedbyPlayer", RpcTarget.AllBuffered);
+                WeaponEquippedbyPlayer();
+                //photonView.RPC("WeaponEquippedbyPlayer", RpcTarget.AllBuffered);
             }
             else if (isGunDetect == false && isSwordDetect == true)
             {
@@ -201,7 +202,8 @@ public class WeaponController : MonoBehaviour
                 //EnableSword(weaponId);
                 Debug.Log(weaponId + "wid");
                 photonView.RPC("EnableSword", RpcTarget.AllBuffered, weaponId);
-                photonView.RPC("WeaponEquippedbyPlayer", RpcTarget.AllBuffered);
+                WeaponEquippedbyPlayer();
+                //photonView.RPC("WeaponEquippedbyPlayer", RpcTarget.AllBuffered);
             }
             else
             {
@@ -221,16 +223,32 @@ public class WeaponController : MonoBehaviour
         }
     }
 
-    [PunRPC]
+    
     public void WeaponEquippedbyPlayer()
     {
-        Gamemanager.instance.GRemoveWO(DestroyweaponObj);
-        Gamemanager.instance.GRemoveOO(DestroyweaponObj);
-        Destroy(DestroyweaponObj);
+        
+        if(PhotonNetwork.IsMasterClient)
+        {
+            Gamemanager.instance.GRemoveWO(DestroyweaponObj);
+            Gamemanager.instance.GRemoveOO(DestroyweaponObj);
+            PhotonNetwork.Destroy(DestroyweaponObj);
+        }
+        else
+        {
+            int viewId = DestroyweaponObj.GetComponent<PhotonView>().ViewID;
+            Debug.Log("ViewID of weapon: " + viewId);
+            photonView.RPC("RPC_ForceMasterClientWeapon", RpcTarget.MasterClient, viewId);
+        }
         Debug.Log("Weapon Destroyed and synced");
     }
 
-    
+    [PunRPC]
+    void RPC_ForceMasterClientWeapon(int viewID)
+    {
+        PhotonNetwork.Destroy(PhotonView.Find(viewID).gameObject);
+        
+    }
+
     public void WeaponDroppedbyPlayer()
     {
         Vector3 PlayerPos = this.transform.position;

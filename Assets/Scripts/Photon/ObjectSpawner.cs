@@ -56,7 +56,7 @@ public class ObjectSpawner : MonoBehaviour
         else
         {
             // photonView.RPC("DestroryObjectsNotMasterClient", RpcTarget.All);
-            DestroryObjectsNotMasterClient();
+            //estroryObjectsNotMasterClient();
         }
     }
 
@@ -103,8 +103,8 @@ public class ObjectSpawner : MonoBehaviour
     
     public void DestroyGameObjects()
     {
-        //DestroySpawnObjects();
-        photonView.RPC("DestroySpawnObjects", RpcTarget.All);
+        DestroySpawnObjects();
+       // photonView.RPC("DestroySpawnObjects", RpcTarget.All);
     }
     // Update is called once per frame
     void Update()
@@ -261,33 +261,43 @@ public class ObjectSpawner : MonoBehaviour
         }
     }
 
-    [PunRPC]
+    
     private void DestroySpawnObjects()
     {
-        foreach(GameObject gameObject in spawnObjects)
+        if (PhotonNetwork.IsMasterClient)
         {
-            if(gameObject != null)
+            foreach (GameObject gameObject in spawnObjects)
             {
-                Destroy(gameObject);
+                if (gameObject != null)
+                {
+                    Debug.Log("spawnobject destory count" + spawnObjects.Count);
+                    //PhotonNetwork.Destroy(gameObject);
+                }
             }
+            foreach (GameObject gameObject in weaponObjects)
+            {
+                if (gameObject != null)
+                {
+                    Debug.Log("Weaponobject destory count" + weaponObjects.Count);
+                    //PhotonNetwork.Destroy(gameObject);
+                }
+            }
+            foreach (GameObject gameObject in OverallObjects)
+            {
+                if (gameObject != null)
+                {
+                    Debug.Log("OverallObject destory count" + OverallObjects.Count);
+                    PhotonNetwork.Destroy(gameObject);
+                }
+            }
+            spawnObjects.Clear();
+            weaponObjects.Clear();
+            OverallObjects.Clear();
         }
-        foreach (GameObject gameObject in weaponObjects)
+        else
         {
-            if (gameObject != null)
-            {
-                Destroy(gameObject);
-            }
+            Debug.Log("OverallObject destory count Not a master client");
         }
-        foreach (GameObject gameObject in OverallObjects)
-        {
-            if (gameObject != null)
-            {
-                Destroy(gameObject);
-            }
-        }
-        spawnObjects.Clear();
-        weaponObjects.Clear();
-        OverallObjects.Clear();
     }
 
     public void RemoveSO(GameObject gameObject)
