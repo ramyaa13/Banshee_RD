@@ -2,8 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using System.Linq;  
-
+using System.Linq;
+using Photon.Pun;
 public class ObjectSpawner : MonoBehaviour
 {
     public enum ObjectType { Gem, Sheild, SprintShoes};
@@ -24,23 +24,87 @@ public class ObjectSpawner : MonoBehaviour
     public List<GameObject> OverallObjects = new List<GameObject>();
     public Transform ObjectContainer;
     public Transform WeaponContainer;
+    public PhotonView photonView;
 
+    private bool isOSpawning = false;
+    private bool isWSpawning = false;
 
+    public GameObject[] Gem;
+    public GameObject[] Sheild;
     // Start is called before the first frame update
     void Start()
     {
-        GatherValidPoints();
-        SpawnGameObjects();
-    }
-    public void SpawnGameObjects()
-    {
-        StartCoroutine(SpawnObjectsIfNeeded());
-        StartCoroutine(SpawnWeaponObjectsIfNeeded());
+        photonView = GetComponent<PhotonView>();
+        
     }
 
+    public void SpawnGE()
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            GatherValidPoints();
+            SpawnGameObjects();
+        }
+    }
+
+    public void DestroyGE()
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            DestroyGameObjects();
+        }
+        else
+        {
+            // photonView.RPC("DestroryObjectsNotMasterClient", RpcTarget.All);
+            DestroryObjectsNotMasterClient();
+        }
+    }
+
+   
+    private void DestroryObjectsNotMasterClient()
+    {
+       
+        Gem = GameObject.FindGameObjectsWithTag("Coin");
+
+        if(Gem.Length!=0)
+        {
+            Debug.Log(Gem.Length + "gEM COUNT");
+            foreach (GameObject g in Gem)
+            {
+
+               // Destroy(g);
+            }
+        }
+        
+
+        
+        Sheild = GameObject.FindGameObjectsWithTag("Shield");
+
+        if (Sheild.Length != 0)
+        {
+            Debug.Log(Gem.Length + "sHIELD COUNT");
+            foreach (GameObject g in Sheild)
+            {
+               // Destroy(g);
+            }
+        }
+            
+    }
+    
+    public void SpawnGameObjects()
+    {
+        isOSpawning = true;
+        isWSpawning = true;
+        StartCoroutine(SpawnObjectsIfNeeded());
+        StartCoroutine(SpawnWeaponObjectsIfNeeded());
+       
+    }
+
+    
     public void DestroyGameObjects()
     {
-        DestroySpawnObjects();
+        //DestroySpawnObjects();
+        photonView.RPC("DestroySpawnObjects", RpcTarget.All);
     }
     // Update is called once per frame
     void Update()
@@ -68,7 +132,7 @@ public class ObjectSpawner : MonoBehaviour
     }
     private IEnumerator SpawnObjectsIfNeeded()
     {
-        while(ActiveObjectsCount() < MaxObjects)
+        while(isOSpawning)
         {
             SpawnObjects();
             yield return new WaitForSeconds(SpawnInterval);
@@ -76,7 +140,7 @@ public class ObjectSpawner : MonoBehaviour
     }
     private IEnumerator SpawnWeaponObjectsIfNeeded()
     {
-        while (ActiveWeaponObjectsCount() < MaxWeaponObjects)
+        while(isWSpawning)
         {
             SpawnWeaponObjects();
             yield return new WaitForSeconds(SpawnInterval);
@@ -85,7 +149,7 @@ public class ObjectSpawner : MonoBehaviour
 
     private bool PositionHasObjects(Vector3 positionToCheck)
     {
-        return OverallObjects.Any(checkObj => checkObj && Vector3.Distance(checkObj.transform.position, positionToCheck) < 15.0f);
+        return OverallObjects.Any(checkObj => checkObj && Vector3.Distance(checkObj.transform.position, positionToCheck) < 5.0f);
     }
 
     private ObjectType RandomObjectType()
@@ -93,26 +157,33 @@ public class ObjectSpawner : MonoBehaviour
         float RandomChoice = Random.value;
         if(RandomChoice <= ShieldProbablity) //0.5f
         {
-            Debug.Log("gem" + RandomChoice);
+            
             return ObjectType.Sheild;
         }
         if (RandomChoice <= (ShieldProbablity + SprintShoesProbablity)) //0.5+0.2
         {
-            Debug.Log("Shield" + RandomChoice);
+            
             return ObjectType.SprintShoes;
         }
         else
         {
-            Debug.Log("Weapon" + RandomChoice);
+            
             return ObjectType.Gem;
         }
     }
 
     private void SpawnObjects()
     {
+        
+        if (ActiveObjectsCount() == MaxObjects)
+        {
+            isOSpawning = false;
+        }
+
         if (validSpawnPoints.Count == 0)
             return;
 
+        
         Vector3 SpawnPositions = Vector3.zero;
         bool isValidPositionFound  = false;
 
@@ -127,6 +198,7 @@ public class ObjectSpawner : MonoBehaviour
             {
                 SpawnPositions = potentialPositions;
                 isValidPositionFound = true;
+                
             }
             validSpawnPoints.RemoveAt(randomIndex);
         }
@@ -134,9 +206,10 @@ public class ObjectSpawner : MonoBehaviour
         if(isValidPositionFound)
         {
             ObjectType objectType = RandomObjectType();
-           // int randomGunIndex = Random.Range(0, ObjectPrefabs.Length);
+            // int randomGunIndex = Random.Range(0, ObjectPrefabs.Length);
             //Instantiate
-            GameObject gameObject = Instantiate(ObjectPrefabs[(int)objectType], SpawnPositions, Quaternion.identity);
+            //GameObject gameObject = Instantiate(ObjectPrefabs[(int)objectType], SpawnPositions, Quaternion.identity);
+            GameObject gameObject = PhotonNetwork.Instantiate(ObjectPrefabs[(int)objectType].name, SpawnPositions, Quaternion.identity);
             gameObject.transform.SetParent(ObjectContainer, false);
             spawnObjects.Add(gameObject);
             OverallObjects.Add(gameObject);
@@ -153,7 +226,10 @@ public class ObjectSpawner : MonoBehaviour
     {
         if (validSpawnPoints.Count == 0)
             return;
-
+        if(ActiveWeaponObjectsCount() == MaxWeaponObjects)
+        {
+            isWSpawning = false;
+        }
         Vector3 SpawnPositions = Vector3.zero;
         bool isValidPositionFound = false;
 
@@ -177,12 +253,15 @@ public class ObjectSpawner : MonoBehaviour
            // ObjectType objectType = RandomObjectType();
              int randomGunIndex = Random.Range(0, WeaponPrefabs.Length);
             //Instantiate
-            GameObject gameObject = Instantiate(WeaponPrefabs[randomGunIndex], SpawnPositions, Quaternion.identity);
+            //GameObject gameObject = Instantiate(WeaponPrefabs[randomGunIndex], SpawnPositions, Quaternion.identity);
+            GameObject gameObject = PhotonNetwork.Instantiate(WeaponPrefabs[randomGunIndex].name, SpawnPositions, Quaternion.identity);
             gameObject.transform.SetParent(WeaponContainer, false);
             weaponObjects.Add(gameObject);
             OverallObjects.Add(gameObject);
         }
     }
+
+    [PunRPC]
     private void DestroySpawnObjects()
     {
         foreach(GameObject gameObject in spawnObjects)
@@ -209,6 +288,32 @@ public class ObjectSpawner : MonoBehaviour
         spawnObjects.Clear();
         weaponObjects.Clear();
         OverallObjects.Clear();
+    }
+
+    public void RemoveSO(GameObject gameObject)
+    {
+        if (PhotonNetwork.IsMasterClient)
+            spawnObjects.Remove(gameObject);
+    }
+    public void RemoveWO(GameObject gameObject)
+    {
+        if (PhotonNetwork.IsMasterClient)
+            weaponObjects.Remove(gameObject);
+    }
+    public void RemoveOO(GameObject gameObject)
+    {
+        if (PhotonNetwork.IsMasterClient)
+            OverallObjects.Remove(gameObject);
+    }
+    public void AddWO(GameObject gameObject)
+    {
+        if (PhotonNetwork.IsMasterClient)
+            weaponObjects.Add(gameObject);
+    }
+    public void AddOO(GameObject gameObject)
+    {
+        if (PhotonNetwork.IsMasterClient)
+            OverallObjects.Add(gameObject);
     }
     private IEnumerator DestroyGameObjectAfterTime(GameObject gameObject, float time)
     {

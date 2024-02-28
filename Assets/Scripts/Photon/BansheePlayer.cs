@@ -187,16 +187,13 @@ public class BansheePlayer : MonoBehaviourPun
     [PunRPC]
     public void RPC_GemCollected()
     {
+        Gamemanager.instance.GRemoveSO(coin);
+        Gamemanager.instance.GRemoveOO(coin);
         Destroy(coin);
         //Debug.Log("Coin Destroyed and synced");
     }
 
-    [PunRPC]
-    public void RPC_ShieldCollected()
-    {
-        Destroy(coin);
-        //Debug.Log("Coin Destroyed and synced");
-    }
+   
 
 
 }

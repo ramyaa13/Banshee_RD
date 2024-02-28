@@ -81,6 +81,8 @@ MonoBehaviour:
   - RPC_GemCollected
   - RPC_ShieldCollected
   - ShieldHealth
+  - DestroySpawnObjects
+  - DestroryObjectsNotMasterClient
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

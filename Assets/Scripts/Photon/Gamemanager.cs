@@ -8,6 +8,7 @@ using Photon.Pun.UtilityScripts;
 using System.Linq;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 
+
 public class Gamemanager : MonoBehaviourPunCallbacks
 {
     public GameObject PlayerPrefab;
@@ -62,12 +63,13 @@ public class Gamemanager : MonoBehaviourPunCallbacks
     private bool GS;
     public string[] x;
     private int d;
-   //public RandomWeaponSpawn randomObjectSpawn;
+    public ObjectSpawner randomObjectSpawn;
     public Transform ObjectContainer;
     
 
     private void Awake()
     {
+        //PhotonNetwork.OfflineMode = true;
         instance = this;
         StartScreen.gameObject.SetActive(true);
         HealthText.text = "100";
@@ -79,7 +81,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         //SpawnPlayer();
         GameStart();
         leaderboard = GetComponent<Leaderboard>();
-        //randomObjectSpawn = GetComponent<RandomWeaponSpawn>();
+        randomObjectSpawn = GetComponent<ObjectSpawner>();
         
     }
 
@@ -172,26 +174,30 @@ public class Gamemanager : MonoBehaviourPunCallbacks
 
     public void SpawnGameEssentials()
     {
-        if(Data.instance.isPlayerMasterClient == true)
+
+        if (Data.instance.isPlayerMasterClient == true)
         {
-           // randomObjectSpawn.SpawnObjects();
+            randomObjectSpawn.SpawnGE();
+            Debug.Log("It's a master client");
         }
         else
         {
-            //not master client
+            Debug.Log("It's not a master client");
         }
-        
+
     }
 
     public void DestroyGameEssentials()
     {
+
         if (Data.instance.isPlayerMasterClient == true)
         {
-           // randomObjectSpawn.DestroyObjects();
+            randomObjectSpawn.DestroyGE();
+            Debug.Log("It's a master client");
         }
         else
         {
-            //not master client
+            Debug.Log("It's not a master client");
         }
     }
 
@@ -257,6 +263,32 @@ public class Gamemanager : MonoBehaviourPunCallbacks
     {
         PlayerWintext.text = player + " WINS THE GAME!!";
     }
+
+    public void GRemoveSO(GameObject gameObject)
+    {
+        randomObjectSpawn.RemoveSO(gameObject);
+    }
+    public void GRemoveWO(GameObject gameObject)
+    {
+        randomObjectSpawn.RemoveWO(gameObject);
+    }
+    public void GRemoveOO(GameObject gameObject)
+    {
+        randomObjectSpawn.RemoveOO(gameObject);
+    }
+
+    public void GAddWO(GameObject gameObject)
+    {
+        randomObjectSpawn.AddWO(gameObject);
+    }
+    public void GAddOO(GameObject gameObject)
+    {
+        randomObjectSpawn.AddOO(gameObject);
+    }
+
+
+
+
 
     public void IsPlayerDeadCounts()
     {

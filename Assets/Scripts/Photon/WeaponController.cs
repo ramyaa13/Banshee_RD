@@ -224,6 +224,8 @@ public class WeaponController : MonoBehaviour
     [PunRPC]
     public void WeaponEquippedbyPlayer()
     {
+        Gamemanager.instance.GRemoveWO(DestroyweaponObj);
+        Gamemanager.instance.GRemoveOO(DestroyweaponObj);
         Destroy(DestroyweaponObj);
         Debug.Log("Weapon Destroyed and synced");
     }
@@ -237,6 +239,8 @@ public class WeaponController : MonoBehaviour
         if(SpawnweaponObj != null)
         {
             GameObject Weapon = PhotonNetwork.Instantiate(SpawnweaponObj.name, PlayerPos, Quaternion.identity);
+            Gamemanager.instance.GAddWO(Weapon);
+            Gamemanager.instance.GAddOO(Weapon);
             Weapon.transform.SetParent(Gamemanager.instance.ObjectContainer, false);
             Weapon.SetActive(true);
             Debug.Log("Weapon spawned and synced: " + SpawnweaponObj.name);
