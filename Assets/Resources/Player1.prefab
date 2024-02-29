@@ -873,7 +873,7 @@ MonoBehaviour:
     SynchronizeType: 2
     Name: Horizontal
   m_SynchronizeLayers:
-  - SynchronizeType: 2
+  - SynchronizeType: 0
     LayerIndex: 0
 --- !u!114 &2087812397649773799
 MonoBehaviour:

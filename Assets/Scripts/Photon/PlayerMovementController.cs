@@ -1,3 +1,4 @@
+using Photon.Pun;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -40,6 +41,7 @@ public class PlayerMovementController : MonoBehaviour
     private float groundedTimer;
     private float knockbackTimer = 0f;
     private bool falling;
+    private PhotonView photonView;
    // private ParticleSystem.EmissionModule footstepEmission;
 
     /// <summary>
@@ -48,6 +50,7 @@ public class PlayerMovementController : MonoBehaviour
     private void Start()
     {
         r = GetComponent<Rigidbody2D>();
+        photonView = GetComponent<PhotonView>();
        // footstepEmission = FootstepParticles.emission;
        
     }
@@ -57,28 +60,30 @@ public class PlayerMovementController : MonoBehaviour
     /// </summary>
     private void Update()
     {
-        bool isRunning = Mathf.Abs(horizontalMovement) > 0.1f;
-        PlayerAnimator.SetBool("isMoving", isRunning);
-
-        //PlayerAnimator.SetFloat("Horizontal", Mathf.Abs(horizontalMovement));
-
-        if (jump)
+        if(photonView.IsMine)
         {
-            jumpTimer = Time.time + JumpBufferTime;
-        }
+            bool isRunning = Mathf.Abs(horizontalMovement) > 0.1f;
+            PlayerAnimator.SetBool("isMoving", isRunning);
 
-       // footstepEmission.rateOverTime = 0f;
+            //PlayerAnimator.SetFloat("Horizontal", Mathf.Abs(horizontalMovement));
 
-        if (horizontalMovement != 0)
-        {
-            direction = horizontalMovement < 0 ? -1 : 1;
-         
-            if (isGrounded)
+            if (jump)
             {
-               // footstepEmission.rateOverTime = 20f;
+                jumpTimer = Time.time + JumpBufferTime;
+            }
+
+            // footstepEmission.rateOverTime = 0f;
+
+            if (horizontalMovement != 0)
+            {
+                direction = horizontalMovement < 0 ? -1 : 1;
+
+                if (isGrounded)
+                {
+                    // footstepEmission.rateOverTime = 20f;
+                }
             }
         }
-
     }
 
     /// <summary>
@@ -86,11 +91,14 @@ public class PlayerMovementController : MonoBehaviour
     /// </summary>
     private void FixedUpdate()
     {
-        CheckIfFalling();
-        CheckIfGrounded();
-        HandleMovement();
-        HandleJumping();
-        ModifyPhysics();
+        if (photonView.IsMine)
+        {
+            CheckIfFalling();
+            CheckIfGrounded();
+            HandleMovement();
+            HandleJumping();
+            ModifyPhysics();
+        }
     }
 
    

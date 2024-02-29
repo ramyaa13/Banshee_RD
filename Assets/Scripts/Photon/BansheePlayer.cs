@@ -193,7 +193,11 @@ public class BansheePlayer : MonoBehaviourPun
     [PunRPC]
     public void RPC_GemCollected(int viewId)
     {
-        PhotonNetwork.Destroy(PhotonView.Find(viewId).gameObject);
+        if(PhotonView.Find(viewId).gameObject != null)
+        {
+            PhotonNetwork.Destroy(PhotonView.Find(viewId).gameObject);
+        }
+        
         //Debug.Log("Coin Destroyed and synced");
     }
 
