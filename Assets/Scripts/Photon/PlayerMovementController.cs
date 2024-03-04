@@ -1,4 +1,5 @@
 using Photon.Pun;
+using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -11,11 +12,14 @@ public class PlayerMovementController : MonoBehaviour
     [Header("Movement")]
     public float MovementSpeed = 100.0f;
     public float GroundedBufferTime = 0.15f;
-   // public ParticleSystem FootstepParticles;
+    public float walkSpeed = 10f;
+    public float runSpeed = 25f;
+    // public ParticleSystem FootstepParticles;
 
     [Header("Jumping")]
-    public float JumpBufferTime = 0.1f;
+    public float JumpBufferTime = 0.5f;
     public float JumpForce = 400.0f;
+    private bool IsJumping = false;
     public float GravityScale = 100.0f;
     public float FallGravityMultiplier = 3.0f;
    // public ParticleSystem LandingParticles;
@@ -31,7 +35,11 @@ public class PlayerMovementController : MonoBehaviour
 
     private Rigidbody2D r;
     public Animator PlayerAnimator;
-   
+
+    public AnimatorController IdleAnimatorController;
+    public AnimatorController GunHoldAnimatorController;
+    public AnimatorController katanaHoldAnimatorController;
+
     private float horizontalMovement;
     private int direction = 1;
     private bool jump;
@@ -42,6 +50,9 @@ public class PlayerMovementController : MonoBehaviour
     private float knockbackTimer = 0f;
     private bool falling;
     private PhotonView photonView;
+
+    public float ResetTimeAmount = 1f;
+    private BansheePlayer BP;
    // private ParticleSystem.EmissionModule footstepEmission;
 
     /// <summary>
@@ -51,10 +62,31 @@ public class PlayerMovementController : MonoBehaviour
     {
         r = GetComponent<Rigidbody2D>();
         photonView = GetComponent<PhotonView>();
+        BP = GetComponent<BansheePlayer>();
+        PlayerAnimator.runtimeAnimatorController = IdleAnimatorController;
        // footstepEmission = FootstepParticles.emission;
-       
-    }
 
+    }
+    public void SetAnimator()
+    {
+        //SetAnimator
+        if (BP.isIdle == true && BP.isGunEquipped == false && BP.isSwordEquipped == false)
+        {
+            PlayerAnimator.runtimeAnimatorController = IdleAnimatorController;
+        }
+        else if (BP.isIdle == false && BP.isGunEquipped == true && BP.isSwordEquipped == false)
+        {
+            PlayerAnimator.runtimeAnimatorController = GunHoldAnimatorController;
+        }
+        else if (BP.isIdle == false && BP.isGunEquipped == false && BP.isSwordEquipped == true)
+        {
+            PlayerAnimator.runtimeAnimatorController = katanaHoldAnimatorController;
+        }
+        else
+        {
+            PlayerAnimator.runtimeAnimatorController = IdleAnimatorController;
+        }
+    }
     /// <summary>
     /// Called by Unity every frame.
     /// </summary>
@@ -62,15 +94,64 @@ public class PlayerMovementController : MonoBehaviour
     {
         if(photonView.IsMine)
         {
-            bool isRunning = Mathf.Abs(horizontalMovement) > 0.1f;
-            PlayerAnimator.SetBool("isMoving", isRunning);
 
-            //PlayerAnimator.SetFloat("Horizontal", Mathf.Abs(horizontalMovement));
+            
+                //bool isRunning = Mathf.Abs(horizontalMovement) > 0.1f;
+                //PlayerAnimator.SetBool("isMoving", isRunning);
+                //PlayerAnimator.SetFloat("Horizontal", Mathf.Abs(horizontalMovement));
+
+                // Player movement
+                float horizontalInput = Input.GetAxis("Horizontal");
+            //bool isRunning = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+            bool isRunning = true;
+            // Adjust speed based on running
+            //float currentSpeed = isRunning ? runSpeed : walkSpeed; // 0 OR 1
+            float currentSpeed = runSpeed;
+            Vector2 moveDirection = new Vector2(horizontalInput, 0f);
+            r.velocity = new Vector2(moveDirection.x * currentSpeed, r.velocity.y);
+
+            // Set walking or running animation parameter
+            PlayerAnimator.SetFloat("Speed", Mathf.Abs(moveDirection.x));
+            Debug.Log(moveDirection.x * currentSpeed + "MD");
+
+            // Set the correct animation based on the speed
+            if (isRunning)
+            {
+                PlayerAnimator.SetBool("IsRunning", true);
+                PlayerAnimator.SetBool("IsWalking", false);
+                //Shoot();
+            }
+            else
+            {
+                PlayerAnimator.SetBool("IsWalking", true);
+                PlayerAnimator.SetBool("IsRunning", false);
+                //Shoot();
+            }
+
+            //idle
+            if (horizontalInput == 0)
+            {
+                PlayerAnimator.SetBool("IsWalking", false);
+                PlayerAnimator.SetBool("IsRunning", false);
+            }
+
+            if(IsJumping)
+            {
+                PlayerAnimator.SetBool("IsJumping", IsJumping);
+                PlayerAnimator.SetBool("IsWalking", false);
+                PlayerAnimator.SetBool("IsRunning", false);
+            }
+            else
+            {
+                PlayerAnimator.SetBool("IsJumping", IsJumping);
+            }
 
             if (jump)
             {
                 jumpTimer = Time.time + JumpBufferTime;
+                
             }
+            
 
             // footstepEmission.rateOverTime = 0f;
 
@@ -86,6 +167,24 @@ public class PlayerMovementController : MonoBehaviour
         }
     }
 
+    public void Shoot()
+    {
+        // Set the shooting animation parameter only when transitioning from not shooting to shooting
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            // Set the shooting animation trigger
+            PlayerAnimator.SetBool("Shoot", true);
+
+        }
+
+        else if (Input.GetKeyUp(KeyCode.F))
+        {
+            // Reset shooting animation trigger (if needed)
+
+            PlayerAnimator.SetBool("Shoot", false);
+
+        }
+    }
     /// <summary>
     /// Called by Unity at a fixed tick rate based on the physics settings.
     /// </summary>
@@ -95,7 +194,7 @@ public class PlayerMovementController : MonoBehaviour
         {
             CheckIfFalling();
             CheckIfGrounded();
-            HandleMovement();
+           // HandleMovement();
             HandleJumping();
             ModifyPhysics();
         }
@@ -114,8 +213,6 @@ public class PlayerMovementController : MonoBehaviour
 
         // Trigger the hit animation.
         //PlayerAnimator.SetTrigger("Hit");
-       
-
     }
 
     /// <summary>
@@ -207,12 +304,27 @@ public class PlayerMovementController : MonoBehaviour
             // Set the player's new velocity based on their existing x velocity and the JumpForce.
             r.velocity = new Vector2(r.velocity.x, JumpForce);
 
-            // Reset the jumpTimer and groundedTimer.
-            jumpTimer = 0;
-            groundedTimer = 0;
+            ResetTimeAmount -= Time.deltaTime;
 
+            if (ResetTimeAmount <= 0)
+            {
+                // Reset the jumpTimer and groundedTimer.
+                jumpTimer = 0;
+                groundedTimer = 0;
+                ResetTimeAmount = 0.2f;
+
+            }
+
+
+            IsJumping = true;
             // Play the jump animation.
-           // PlayerAnimator.SetTrigger("Jump");
+            //PlayerAnimator.SetTrigger("Jump");
+            
+
+        }
+        else
+        {
+            IsJumping = false;
             
         }
     }

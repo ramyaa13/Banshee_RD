@@ -194,6 +194,7 @@ public class WeaponController : MonoBehaviour
                 Debug.Log(weaponId + "wid");
                 photonView.RPC("EnableGunWeapon", RpcTarget.AllBuffered, weaponId);
                 WeaponEquippedbyPlayer();
+                Gamemanager.instance.SetPlayerState(2);
                 //photonView.RPC("WeaponEquippedbyPlayer", RpcTarget.AllBuffered);
             }
             else if (isGunDetect == false && isSwordDetect == true)
@@ -203,6 +204,7 @@ public class WeaponController : MonoBehaviour
                 Debug.Log(weaponId + "wid");
                 photonView.RPC("EnableSword", RpcTarget.AllBuffered, weaponId);
                 WeaponEquippedbyPlayer();
+                Gamemanager.instance.SetPlayerState(3);
                 //photonView.RPC("WeaponEquippedbyPlayer", RpcTarget.AllBuffered);
             }
             else
@@ -218,6 +220,7 @@ public class WeaponController : MonoBehaviour
             DestroyweaponObj = null;
             // DisableWeapons();
             photonView.RPC("DisableWeapons", RpcTarget.AllBuffered);
+            Gamemanager.instance.SetPlayerState(1);
             //photonView.RPC("WeaponDroppedbyPlayer", RpcTarget.AllBuffered);
             WeaponDroppedbyPlayer();
         }

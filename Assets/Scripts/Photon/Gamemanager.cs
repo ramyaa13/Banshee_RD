@@ -145,7 +145,36 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         }
     }
 
-
+    public void SetPlayerState(int x)
+    {
+        switch (x)
+        {
+            case 1: // player without weapons
+                LocalPlayer.GetComponent<BansheePlayer>().isIdle = true;
+                LocalPlayer.GetComponent<BansheePlayer>().isGunEquipped = false;
+                LocalPlayer.GetComponent<BansheePlayer>().isSwordEquipped = false;
+                LocalPlayer.GetComponent<BansheePlayer>().SetPlayerAnimator();
+                break;
+            case 2: // player with Gun
+                LocalPlayer.GetComponent<BansheePlayer>().isIdle = false;
+                LocalPlayer.GetComponent<BansheePlayer>().isGunEquipped = true;
+                LocalPlayer.GetComponent<BansheePlayer>().isSwordEquipped = false;
+                LocalPlayer.GetComponent<BansheePlayer>().SetPlayerAnimator();
+                break;
+            case 3: // player with Sword
+                LocalPlayer.GetComponent<BansheePlayer>().isIdle = false;
+                LocalPlayer.GetComponent<BansheePlayer>().isGunEquipped = false;
+                LocalPlayer.GetComponent<BansheePlayer>().isSwordEquipped = true;
+                LocalPlayer.GetComponent<BansheePlayer>().SetPlayerAnimator();
+                break;
+            default:
+                LocalPlayer.GetComponent<BansheePlayer>().isIdle = true;
+                LocalPlayer.GetComponent<BansheePlayer>().isGunEquipped = false;
+                LocalPlayer.GetComponent<BansheePlayer>().isSwordEquipped = false;
+                LocalPlayer.GetComponent<BansheePlayer>().SetPlayerAnimator();
+                break;
+        }
+    }
     public void EnableRespawn()
     {
         LevelUI.SetActive(false);
@@ -182,6 +211,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         }
         else
         {
+            randomObjectSpawn.SpawnGE();
             Debug.Log("It's not a master client");
         }
 

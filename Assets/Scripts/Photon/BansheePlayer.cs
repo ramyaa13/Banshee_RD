@@ -39,11 +39,15 @@ public class BansheePlayer : MonoBehaviourPun
     public string PlayerName;
     public GameObject PlayerObj;
 
+    public bool isGunEquipped =  false;
+    public bool isIdle = true;
+    public bool isSwordEquipped =  false;
     private void Awake()
     {
         if (photonView.IsMine)
         {
             Gamemanager.instance.LocalPlayer = this.gameObject;
+           // Gamemanager.instance.SetPlayerState(1);
             PlayerCam.SetActive(true);
             PlayerNameText.text = PhotonNetwork.NickName;
             PlayerName = PhotonNetwork.NickName;
@@ -58,12 +62,16 @@ public class BansheePlayer : MonoBehaviourPun
         }
     }
 
+
+
     private void Start()
     {
         gunEquipController = GetComponent<WeaponController>();
         playerMovementController = GetComponent<PlayerMovementController>();
         healthController = GetComponent<HealthController>();
     }
+
+   
 
     // Update is called once per frame
     void Update()
@@ -77,7 +85,10 @@ public class BansheePlayer : MonoBehaviourPun
         }
     }
 
-    
+    public void SetPlayerAnimator()
+    {
+        playerMovementController.SetAnimator();
+    }
 
     //Player Movement
     private void PlayerMovementControl()
@@ -148,7 +159,8 @@ public class BansheePlayer : MonoBehaviourPun
     //Shoot
     private void Shoot()
     {
-        if(Input.GetKeyDown(KeyCode.F))
+        playerMovementController.Shoot();
+        if (Input.GetKeyDown(KeyCode.F))
         {
             gunEquipController.Shoot(isfacingRight);
         }
