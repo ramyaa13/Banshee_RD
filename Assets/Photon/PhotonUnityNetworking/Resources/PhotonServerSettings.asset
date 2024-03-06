@@ -84,6 +84,8 @@ MonoBehaviour:
   - DestroySpawnObjects
   - DestroryObjectsNotMasterClient
   - RPC_ForceMasterClientWeapon
+  - CharacterCustomise
+  - RPC_ForceMasterSpawnWeapon
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

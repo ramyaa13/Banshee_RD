@@ -26,7 +26,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
 
     //player respawn
     private bool b_Level;
-    private float LevelTimeAmount = 5;
+    private float LevelTimeAmount = 10;
     public TextMeshProUGUI LevelTimer;
     public TextMeshProUGUI LevelCountText;
     public GameObject LevelUI;
@@ -65,7 +65,14 @@ public class Gamemanager : MonoBehaviourPunCallbacks
     private int d;
     public ObjectSpawner randomObjectSpawn;
     public Transform ObjectContainer;
-    
+
+    private int roomMaxPlayers;
+
+    public GameObject HomePanel;
+    public TextMeshProUGUI PlayerNameText;
+    public TextMeshProUGUI GemCountText;
+    public TextMeshProUGUI StarCountText;
+    public TextMeshProUGUI CrystalCountText;
 
     private void Awake()
     {
@@ -79,6 +86,8 @@ public class Gamemanager : MonoBehaviourPunCallbacks
     void Start()
     {
         //SpawnPlayer();
+        roomMaxPlayers = Data.instance.maxplayers - 1;
+        Debug.Log(roomMaxPlayers + "room max players");
         GameStart();
         leaderboard = GetComponent<Leaderboard>();
         randomObjectSpawn = GetComponent<ObjectSpawner>();
@@ -94,6 +103,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         Deathcount = 0;
         GemsCount = 0;
         isPlayerDead = 0;
+        LevelTimeAmount = 10f;
         d = 0;
         SetHashes();
         EnableLevel();
@@ -178,7 +188,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
     public void EnableRespawn()
     {
         LevelUI.SetActive(false);
-        TimeAmount = 2;
+        TimeAmount = 0.1f;
         startRespawn = true;
         //respawnUI.SetActive(true);
     }
@@ -199,6 +209,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         GemsCount = 0;
         isPlayerDead = 0;
         SetHashes();
+        leaderboard.SetPlayerName(LocalPlayer.GetComponent<BansheePlayer>().PlayerName);
     }
 
     public void SpawnGameEssentials()
@@ -211,7 +222,6 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         }
         else
         {
-            randomObjectSpawn.SpawnGE();
             Debug.Log("It's not a master client");
         }
 
@@ -272,7 +282,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
             CancelInvoke("IsPlayerDeadCounts");
             DestroyGameEssentials();
             LevelUI.SetActive(true);
-            LevelTimeAmount = 5;
+            LevelTimeAmount = 10f;
             b_Level = true;
             LevelCount += 1;
             LevelCountText.text = "Level : " + LevelCount;
@@ -286,12 +296,21 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         LeaderboardUI.SetActive(true);
         GameOverUI.SetActive(true);
         leaderboard.PlayerWins();
+        PlayerNameText.text = LocalPlayer.GetComponent<BansheePlayer>().PlayerName;
+    }
+
+    public void Home()
+    {
+
     }
 
     //Player Wins
-    public void IsPlayerWins(string player)
+    public void IsPlayerWins(string player, int stars, int crstals)
     {
         PlayerWintext.text = player + " WINS THE GAME!!";
+        StarCountText.text = "Stars : " + stars;
+        CrystalCountText.text = "Crystals : " + crstals;
+        GemCountText.text = "Gems : " + KillCount;
     }
 
     public void GRemoveSO(GameObject gameObject)
@@ -345,7 +364,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
             i++;
         }
 
-        if(d == 3)
+        if(d == roomMaxPlayers)
         {
             //next level load
             //cancel invoke
@@ -416,11 +435,18 @@ public class Gamemanager : MonoBehaviourPunCallbacks
             Hash["Deaths"] = Deathcount;
             Hash["Gems"] = GemsCount;
             Hash["IsplayerDead"] = isPlayerDead;
+            Hash["HairIndex"] = Data.instance.HairIndex;
+            Hash["EyeIndex"] = Data.instance.EyesIndex;
+            Hash["TopIndex"] = Data.instance.TopsIndex;
+            Hash["IsKnickersOn"] = Data.instance.IsKnickersOn;
+            Hash["IsShortsOn"] = Data.instance.IsShortsOn;
+            Hash["IsMaskOn"] = Data.instance.IsMaskOn;
             PhotonNetwork.LocalPlayer.SetCustomProperties(Hash);
         }
         catch
         {
             //Do Nothing
+            //(bool)p.CustomProperties["Dead"] == true
         }
     }
 

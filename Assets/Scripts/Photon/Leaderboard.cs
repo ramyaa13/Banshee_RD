@@ -14,17 +14,25 @@ public class Leaderboard : MonoBehaviour
 
     public GameObject[] slots;
     public TextMeshProUGUI[] PlayerName;
-    public TextMeshProUGUI[] Score;
+   
     public TextMeshProUGUI[] KillandDeaths;
     private bool x = true;
 
+    
+    private int stars = 4;
+    private int crystals;
+    public string LocalPlayerName;
     // Start is called before the first frame update
     void Start()
     {
+        
         x = true;
         InvokeRepeating(nameof(Refresh), 1f, refreshRate);
     }
-
+    public void SetPlayerName(string playerName)
+    {
+        LocalPlayerName = playerName;
+    }
     public void Refresh()
     {
         foreach (var slot in slots)
@@ -35,6 +43,7 @@ public class Leaderboard : MonoBehaviour
         var sortedPlayerList = (from player in PhotonNetwork.PlayerList orderby player.CustomProperties["Kills"] descending select player).ToList();
 
         int i = 0;
+        stars = 4;
         foreach (var player in sortedPlayerList)
         {
             slots[i].SetActive(true);
@@ -51,14 +60,15 @@ public class Leaderboard : MonoBehaviour
                 KillandDeaths[i].text = "0/0";
             }
 
-            if(player.CustomProperties["Gems"] != null)
+            if(LocalPlayerName != null)
             {
-                Score[i].text = player.CustomProperties["Gems"].ToString();
+                if (player.NickName == LocalPlayerName)
+                {
+                    stars = stars - i;
+                    Debug.Log("stars earned by: " + LocalPlayerName + stars);
+                }
             }
-            else
-            {
-                Score[i].text = "0";
-            }
+            
 
             i++;
         }
@@ -66,15 +76,25 @@ public class Leaderboard : MonoBehaviour
 
     public void Update()
     {
-        if(x)
-            LeaderboardUI.SetActive(Input.GetKey(KeyCode.Tab));
+        //if (x)
+        //    LeaderboardUI.SetActive(Input.GetKey(KeyCode.Tab));
 
     }
 
     public void PlayerWins()
     {
         x = false;
+        //CancelInvoke("Refresh");
         string PlayerWin = PlayerName[0].text;
-        Gamemanager.instance.IsPlayerWins(PlayerWin);
+        Debug.Log(LocalPlayerName + PlayerWin + "crsytal matched");
+        if(PlayerWin == LocalPlayerName)
+        {
+            crystals = 1;
+        }
+        else
+        {
+            crystals = 0;
+        }
+        Gamemanager.instance.IsPlayerWins(PlayerWin, stars, crystals);
     }
 }

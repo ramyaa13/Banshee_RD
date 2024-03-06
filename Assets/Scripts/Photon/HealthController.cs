@@ -53,6 +53,7 @@ public class HealthController : MonoBehaviour
     [PunRPC]
     public void death()
     {
+        DisableInputs();
         playerScript.DisableInputs = true;
         rb.gravityScale = 0;
         collider.enabled = false;

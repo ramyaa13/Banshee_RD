@@ -1,7 +1,9 @@
 using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class WeaponController : MonoBehaviour
 {
@@ -65,11 +67,13 @@ public class WeaponController : MonoBehaviour
 
     public void WeaponSpawnObj(string name)
     {
+        Debug.Log(name + "wsobj entered");
         foreach (var weapon in WO)
         {
             if(weapon.name == name)
             {
                 SpawnweaponObj = weapon;
+                Debug.Log(SpawnweaponObj.name + ": spawn weapon object assigned");
             }
         }
 
@@ -148,21 +152,23 @@ public class WeaponController : MonoBehaviour
                 {
                     if (weapon.WeaponTag == "Sword")
                     {
+                        Debug.Log(collision.gameObject.tag + weapon.WeaponTag + "collided");
                         weaponId = weapon.ID;
                         isSwordDetect = true;
                         isGunDetect = false;
                         DestroyweaponObj = collision.gameObject;
-                        WeaponName = collision.gameObject.name;
-                        WeaponSpawnObj(collision.gameObject.name);
+                        WeaponName = collision.gameObject.tag;
+                        WeaponSpawnObj(collision.gameObject.tag);
                     }
                     else
                     {
+                        Debug.Log(collision.gameObject.tag + weapon.WeaponTag + "collided");
                         weaponId = weapon.ID;
                         isGunDetect = true;
                         isSwordDetect = false;
                         DestroyweaponObj = collision.gameObject;
-                        WeaponName = collision.gameObject.name;
-                        WeaponSpawnObj(collision.gameObject.name);
+                        WeaponName = collision.gameObject.tag;
+                        WeaponSpawnObj(collision.gameObject.tag);
                     }
                 }
             }
@@ -257,15 +263,40 @@ public class WeaponController : MonoBehaviour
         Vector3 PlayerPos = this.transform.position;
         PlayerPos.x += 1f;
         PlayerPos.y += 3f;
-        if(SpawnweaponObj != null)
+        if (SpawnweaponObj != null)
         {
-            GameObject Weapon = PhotonNetwork.Instantiate(SpawnweaponObj.name, PlayerPos, Quaternion.identity);
-            Gamemanager.instance.GAddWO(Weapon);
-            Gamemanager.instance.GAddOO(Weapon);
-            Weapon.transform.SetParent(Gamemanager.instance.ObjectContainer, false);
-            Weapon.SetActive(true);
-            Debug.Log("Weapon spawned and synced: " + SpawnweaponObj.name);
+
+            if (PhotonNetwork.IsMasterClient)
+            {
+       
+                GameObject Weapon = PhotonNetwork.Instantiate(SpawnweaponObj.name, PlayerPos, Quaternion.identity);
+                Weapon.transform.SetParent(Gamemanager.instance.ObjectContainer, false);
+                Weapon.SetActive(true);
+                Gamemanager.instance.GAddWO(Weapon);
+                Gamemanager.instance.GAddOO(Weapon);
+            }
+            else
+            {
+                Debug.Log("client dropped weqapon");
+                photonView.RPC("RPC_ForceMasterSpawnWeapon", RpcTarget.MasterClient, PlayerPos, SpawnweaponObj.name);
+            }
         }
+    }
+
+    [PunRPC]
+    void RPC_ForceMasterSpawnWeapon(Vector3 _position, string name)
+    {
+        SpawnEquippedWeapon(_position, name);
+    }
+
+    public void SpawnEquippedWeapon(Vector3 position, string SpawnObjectName)
+    {
+
+        GameObject obj = PhotonNetwork.InstantiateRoomObject(SpawnObjectName, position, Quaternion.identity);
+        obj.transform.SetParent(Gamemanager.instance.ObjectContainer, false);
+        obj.SetActive(true);
+        Gamemanager.instance.GAddWO(obj);
+        Gamemanager.instance.GAddOO(obj);
     }
 
     public Vector2 GetGunDirection(Transform referenceTransform)

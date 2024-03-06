@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.U2D;
 using UnityEngine.U2D.Animation;
 using UnityEngine.UI;
 using TMPro;
@@ -48,13 +47,25 @@ public class CharacterCustomisation : MonoBehaviour
     public int HairIndex;
     public int EyesIndex;
     public int TopsIndex;
+    public bool IsKnickersOn;
+    public bool IsShortsOn;
+    public bool IsMaskOn;
     private SpriteLibraryAsset LibraryAsset => spriteLibrary.spriteLibraryAsset;
     // Start is called before the first frame update
     void Start()
     {
+        HairIndex = 0;
+        EyesIndex = 0;
+        TopsIndex = 0;
+        IsKnickersOn = true;
+        IsShortsOn = true;
+        IsMaskOn = false;
         HairCustomise();
         EyesCustomise();
         TopCustomsie();
+        MaskValue();
+        KnickersValue();
+        ShortsValue();
         MaskToggle.onValueChanged.AddListener(delegate { MaskValue(); });
         ShortsToggle.onValueChanged.AddListener(delegate { ShortsValue(); });
         KnickersToggle.onValueChanged.AddListener(delegate { KnickersValue(); });
@@ -63,7 +74,7 @@ public class CharacterCustomisation : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     public void HairCustomise()
@@ -135,9 +146,10 @@ public class CharacterCustomisation : MonoBehaviour
 
     public void MaskValue()
     {
-        if(MaskToggle.isOn)
+        if (MaskToggle.isOn)
         {
             Mask.gameObject.SetActive(true);
+            IsMaskOn = true;
             HairObj.SetActive(false);
             HT.SetActive(false);
             MaskLable.text = "Mask On";
@@ -145,6 +157,7 @@ public class CharacterCustomisation : MonoBehaviour
         else
         {
             Mask.gameObject.SetActive(false);
+            IsMaskOn = false;
             HairObj.SetActive(true);
             HT.SetActive(true);
             MaskLable.text = "Mask Off";
@@ -159,7 +172,7 @@ public class CharacterCustomisation : MonoBehaviour
             {
                 item.SetActive(true);
             }
-            
+            IsShortsOn = true;
             ShortsLable.text = "Shorts On";
         }
         else
@@ -168,6 +181,7 @@ public class CharacterCustomisation : MonoBehaviour
             {
                 item.SetActive(false);
             }
+            IsShortsOn = false;
             ShortsLable.text = "Shorts Off";
         }
     }
@@ -177,11 +191,13 @@ public class CharacterCustomisation : MonoBehaviour
         if (KnickersToggle.isOn)
         {
             Knicker.gameObject.SetActive(true);
+            IsKnickersOn = true;
             KnickersLable.text = "Knickers On";
         }
         else
         {
             Knicker.gameObject.SetActive(false);
+            IsKnickersOn = false;
             KnickersLable.text = "Knickers Off";
         }
     }

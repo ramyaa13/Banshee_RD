@@ -7,7 +7,10 @@ using Unity.VisualScripting;
 using TMPro;
 using Photon.Pun.UtilityScripts;
 using UnityEngine.SocialPlatforms.Impl;
-
+using UnityEngine.U2D.Animation;
+using System.Linq;
+using UnityEngine.UI;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class BansheePlayer : MonoBehaviourPun
 {
@@ -42,8 +45,32 @@ public class BansheePlayer : MonoBehaviourPun
     public bool isGunEquipped =  false;
     public bool isIdle = true;
     public bool isSwordEquipped =  false;
+
+    //CHARACTER CUSTOM
+    [SerializeField]
+    private SpriteLibrary spriteLibrary = default;
+
+    public SpriteResolver HairResolver = default;
+    public SpriteResolver EyesResolver = default;
+    public SpriteResolver ArmLeftResolver = default;
+    public SpriteResolver ArmRightResolver = default;
+    public SpriteResolver TopResolver = default;
+
+    public string Hair;
+    public string Eyes;
+    public string Top;
+    public string ArmL;
+    public string ArmR;
+
+    public GameObject HairObj;
+    public GameObject Mask;
+    public GameObject Knicker;
+    public GameObject[] Shorts;
+    public PhotonView photonView;
+    private SpriteLibraryAsset LibraryAsset => spriteLibrary.spriteLibraryAsset;
     private void Awake()
     {
+        photonView = GetComponent<PhotonView>();
         if (photonView.IsMine)
         {
             Gamemanager.instance.LocalPlayer = this.gameObject;
@@ -69,6 +96,7 @@ public class BansheePlayer : MonoBehaviourPun
         gunEquipController = GetComponent<WeaponController>();
         playerMovementController = GetComponent<PlayerMovementController>();
         healthController = GetComponent<HealthController>();
+        CharacterCustomise();
     }
 
    
@@ -76,6 +104,7 @@ public class BansheePlayer : MonoBehaviourPun
     // Update is called once per frame
     void Update()
     {
+        playerMovementController.SetEnableDisableInputs(DisableInputs);
         if (photonView.IsMine && DisableInputs == false)
         {
             PlayerMovementControl();
@@ -85,6 +114,59 @@ public class BansheePlayer : MonoBehaviourPun
         }
     }
 
+   
+    public void CharacterCustomise()
+    {
+        string[] hairlabels = LibraryAsset.GetCategoryLabelNames(Hair).ToArray();
+        HairResolver.SetCategoryAndLabel(Hair, hairlabels[(int)photonView.Owner.CustomProperties["HairIndex"]]);
+
+        string[] eyelabels = LibraryAsset.GetCategoryLabelNames(Eyes).ToArray();
+        EyesResolver.SetCategoryAndLabel(Eyes, eyelabels[(int)photonView.Owner.CustomProperties["EyeIndex"]]);
+
+        string[] Toplabels = LibraryAsset.GetCategoryLabelNames(Top).ToArray();
+        string[] RAlabels = LibraryAsset.GetCategoryLabelNames(ArmR).ToArray();
+        string[] LAlabels = LibraryAsset.GetCategoryLabelNames(ArmL).ToArray();
+        TopResolver.SetCategoryAndLabel(Top, Toplabels[(int)photonView.Owner.CustomProperties["TopIndex"]]);
+        ArmLeftResolver.SetCategoryAndLabel(ArmL, RAlabels[(int)photonView.Owner.CustomProperties["TopIndex"]]);
+        ArmRightResolver.SetCategoryAndLabel(ArmR, LAlabels[(int)photonView.Owner.CustomProperties["TopIndex"]]);
+
+        if ((bool)photonView.Owner.CustomProperties["IsKnickersOn"] == true)
+        {
+            Mask.gameObject.SetActive(true);
+            HairObj.SetActive(false);
+        }
+        else
+        {
+            Mask.gameObject.SetActive(false);
+            HairObj.SetActive(true);
+        }
+
+        if ((bool)photonView.Owner.CustomProperties["IsShortsOn"] == true)
+        {
+            foreach (GameObject item in Shorts)
+            {
+                item.SetActive(true);
+            }
+        }
+        else
+        {
+            foreach (GameObject item in Shorts)
+            {
+                item.SetActive(false);
+            }
+        }
+
+        if ((bool)photonView.Owner.CustomProperties["IsMaskOn"] == true)
+        {
+            Knicker.gameObject.SetActive(true);
+        }
+        else
+        {
+            Knicker.gameObject.SetActive(false);
+        }
+    }
+
+
     public void SetPlayerAnimator()
     {
         playerMovementController.SetAnimator();
@@ -93,7 +175,7 @@ public class BansheePlayer : MonoBehaviourPun
     //Player Movement
     private void PlayerMovementControl()
     {
-
+        
         // Get the current input states.
         var horizontalInput = Input.GetAxisRaw("Horizontal");
         var attack = Input.GetButtonDown("Fire1");
@@ -120,7 +202,7 @@ public class BansheePlayer : MonoBehaviourPun
         playerMovementController.SetHorizontalMovement(HorizontalInput);
         playerMovementController.SetJump(Jump);
         playerMovementController.SetJumpHeld(JumpHeld);
-
+        
         photonView.RPC("Flip", RpcTarget.AllBuffered);
         
     }

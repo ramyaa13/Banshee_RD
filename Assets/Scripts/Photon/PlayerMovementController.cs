@@ -1,8 +1,7 @@
 using Photon.Pun;
-using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Events;
-
+using UnityEngine.Animations;
 /// <summary>
 /// A component that handles all player movement.
 /// </summary>
@@ -36,9 +35,9 @@ public class PlayerMovementController : MonoBehaviour
     private Rigidbody2D r;
     public Animator PlayerAnimator;
 
-    public AnimatorController IdleAnimatorController;
-    public AnimatorController GunHoldAnimatorController;
-    public AnimatorController katanaHoldAnimatorController;
+    public RuntimeAnimatorController IdleAnimatorController;
+    public RuntimeAnimatorController GunHoldAnimatorController;
+    public RuntimeAnimatorController katanaHoldAnimatorController;
 
     private float horizontalMovement;
     private int direction = 1;
@@ -53,6 +52,9 @@ public class PlayerMovementController : MonoBehaviour
 
     public float ResetTimeAmount = 1f;
     private BansheePlayer BP;
+    private bool DisableInputs;
+    private bool isRunning;
+    private float horizontalInput;
    // private ParticleSystem.EmissionModule footstepEmission;
 
     /// <summary>
@@ -92,18 +94,30 @@ public class PlayerMovementController : MonoBehaviour
     /// </summary>
     private void Update()
     {
-        if(photonView.IsMine)
+
+        if(photonView.IsMine && DisableInputs ==true)
+        {
+            PlayerAnimator.SetBool("IsRunning", false);
+            PlayerAnimator.SetBool("IsWalking", false);
+            PlayerAnimator.SetBool("IsJumping", false);
+            PlayerAnimator.SetBool("Shoot", false);
+            runSpeed = 0f;
+            isRunning = false;
+            horizontalInput = 0f;
+        }
+
+        if(photonView.IsMine && DisableInputs == false)
         {
 
-            
+            runSpeed = 20f;
                 //bool isRunning = Mathf.Abs(horizontalMovement) > 0.1f;
                 //PlayerAnimator.SetBool("isMoving", isRunning);
                 //PlayerAnimator.SetFloat("Horizontal", Mathf.Abs(horizontalMovement));
 
-                // Player movement
-                float horizontalInput = Input.GetAxis("Horizontal");
+            // Player movement
+                horizontalInput = Input.GetAxis("Horizontal");
             //bool isRunning = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-            bool isRunning = true;
+            isRunning  = true;
             // Adjust speed based on running
             //float currentSpeed = isRunning ? runSpeed : walkSpeed; // 0 OR 1
             float currentSpeed = runSpeed;
@@ -112,7 +126,7 @@ public class PlayerMovementController : MonoBehaviour
 
             // Set walking or running animation parameter
             PlayerAnimator.SetFloat("Speed", Mathf.Abs(moveDirection.x));
-            Debug.Log(moveDirection.x * currentSpeed + "MD");
+            //Debug.Log(moveDirection.x * currentSpeed + "MD");
 
             // Set the correct animation based on the speed
             if (isRunning)
@@ -123,7 +137,7 @@ public class PlayerMovementController : MonoBehaviour
             }
             else
             {
-                PlayerAnimator.SetBool("IsWalking", true);
+                PlayerAnimator.SetBool("IsWalking", false);
                 PlayerAnimator.SetBool("IsRunning", false);
                 //Shoot();
             }
@@ -196,7 +210,7 @@ public class PlayerMovementController : MonoBehaviour
             CheckIfGrounded();
            // HandleMovement();
             HandleJumping();
-            ModifyPhysics();
+            //ModifyPhysics();
         }
     }
 
@@ -289,7 +303,7 @@ public class PlayerMovementController : MonoBehaviour
         }
 
         // Set the player's new velocity based on their horizontal input and their existing y velocity.
-        r.velocity = new Vector2(horizontalMovement * MovementSpeed, r.velocity.y);
+       // r.velocity = new Vector2(horizontalMovement * MovementSpeed, r.velocity.y);
     }
 
     /// <summary>
@@ -373,6 +387,11 @@ public class PlayerMovementController : MonoBehaviour
     public void SetJump(bool value)
     {
         jump = value;
+    }
+
+    public void SetEnableDisableInputs(bool value)
+    {
+        DisableInputs = value;
     }
 
 

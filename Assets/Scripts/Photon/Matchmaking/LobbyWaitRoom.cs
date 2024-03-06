@@ -43,7 +43,7 @@ public class LobbyWaitRoom : MonoBehaviourPunCallbacks
 
     public TextMeshProUGUI RoomNameText;
     public TextMeshProUGUI[] PlayerNameTexts;
-    
+    public GameObject[] UI_Slots;
 
     // Start is called before the first frame update
     void Start()
@@ -54,6 +54,35 @@ public class LobbyWaitRoom : MonoBehaviourPunCallbacks
         notFullGameTimer = MaxWaitTime;
         timerToStartGame = MaxWaitTime;
         RoomNameText.text = "Room Name : " + PhotonNetwork.CurrentRoom.Name;
+
+        if (PhotonNetwork.CurrentRoom.MaxPlayers == 4)
+        {
+            MinPlayerToStart = 4;
+            Data.instance.SetRoomMaxPlayers(MinPlayerToStart);
+            for (int i = 0; i < MinPlayerToStart; i++)
+            {
+                UI_Slots[i].SetActive(true);
+            }
+        }
+        else if (PhotonNetwork.CurrentRoom.MaxPlayers == 3)
+        {
+            MinPlayerToStart = 3;
+            Data.instance.SetRoomMaxPlayers(MinPlayerToStart);
+            for (int i = 0; i < MinPlayerToStart; i++)
+            {
+                UI_Slots[i].SetActive(true);
+            }
+        }
+        else
+        {
+            MinPlayerToStart = 4;
+            Data.instance.SetRoomMaxPlayers(MinPlayerToStart);
+            for (int i = 0; i < MinPlayerToStart; i++)
+            {
+                UI_Slots[i].SetActive(true);
+            }
+        }
+
         PlayerCountUpdate();
     }
 
