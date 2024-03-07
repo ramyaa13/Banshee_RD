@@ -55,11 +55,7 @@ public class HealthController : MonoBehaviour
         playerScript.DisableInputs = true;
     }
 
-    IEnumerator WaitForThreeSeconds()
-    {
-        // Wait for 3 seconds
-        yield return new WaitForSeconds(3f);
-    }
+    
 
     [PunRPC]
     public void death()
@@ -73,9 +69,11 @@ public class HealthController : MonoBehaviour
         playerCanvas.SetActive(false);
 
         PlayerMovementController.PlayDeathAnimation();
+        //PlayerAnimator.SetBool("Dead", true);
+
         rb.constraints = RigidbodyConstraints2D.FreezePositionX;
        
-        photonView.RPC("DelayedDeathActions", RpcTarget.All, PhotonNetwork.Time + 3f);
+        photonView.RPC("DelayedDeathActions", RpcTarget.All, PhotonNetwork.Time + 2f);
     }
     //Custom added scripts 
     [PunRPC]
@@ -97,9 +95,9 @@ public class HealthController : MonoBehaviour
     private void CompleteDeath()
     {
         // Your additional death actions after waiting for 3 seconds
-
-        MainCharacter.gameObject.SetActive(false);
         deadsprite.gameObject.SetActive(true);
+        MainCharacter.gameObject.SetActive(false);
+
     }
     //waiting scripts
 
@@ -112,9 +110,11 @@ public class HealthController : MonoBehaviour
         rb.isKinematic = false;
         rb.simulated = true;
 
+        PlayerMovementController.ResetDeathAnimation();
+        
+
         MainCharacter.gameObject.SetActive(true);
 
-        PlayerMovementController.ResetDeathAnimation();
 
         rb.constraints &= ~RigidbodyConstraints2D.FreezePositionX;
         rb.constraints = RigidbodyConstraints2D.FreezeRotation;

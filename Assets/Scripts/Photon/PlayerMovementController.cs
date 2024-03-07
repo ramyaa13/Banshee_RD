@@ -54,7 +54,9 @@ public class PlayerMovementController : MonoBehaviour
     private BansheePlayer BP;
     private bool DisableInputs;
     private bool isRunning;
+    private bool isDead;
     private bool Dead;
+    private bool Idle;
     private float horizontalInput;
 
     // private ParticleSystem.EmissionModule footstepEmission;
@@ -104,9 +106,9 @@ public class PlayerMovementController : MonoBehaviour
             PlayerAnimator.SetBool("IsWalking", false);
             PlayerAnimator.SetBool("IsJumping", false);
             PlayerAnimator.SetBool("Shoot", false);
-            PlayerAnimator.SetBool("Dead", true);
             runSpeed = 0f;
             isRunning = false;
+            
             horizontalInput = 0f;
         }
 
@@ -132,7 +134,7 @@ public class PlayerMovementController : MonoBehaviour
             // Set walking or running animation parameter
             PlayerAnimator.SetFloat("Speed", Mathf.Abs(moveDirection.x));
             //Debug.Log(moveDirection.x * currentSpeed + "MD");
-
+            //
             // Set the correct animation based on the speed
             if (isRunning)
             {
@@ -152,6 +154,7 @@ public class PlayerMovementController : MonoBehaviour
             {
                 PlayerAnimator.SetBool("IsWalking", false);
                 PlayerAnimator.SetBool("IsRunning", false);
+                //PlayerAnimator.SetBool("Dead",false);
             }
 
             if (IsJumping)
@@ -171,7 +174,7 @@ public class PlayerMovementController : MonoBehaviour
 
             }
 
-
+            
             // footstepEmission.rateOverTime = 0f;
 
             if (horizontalMovement != 0)
@@ -428,6 +431,7 @@ public class PlayerMovementController : MonoBehaviour
     public void ResetDeathAnimation()
     {
         PlayerAnimator.SetBool("Dead",false);
+        //PlayerAnimator.SetBool("Idle",true);
 
     }
 }

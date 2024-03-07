@@ -45,7 +45,7 @@ public class BansheePlayer : MonoBehaviourPun
     public bool isGunEquipped =  false;
     public bool isIdle = true;
     public bool isSwordEquipped =  false;
-
+    
     //CHARACTER CUSTOM
     [SerializeField]
     private SpriteLibrary spriteLibrary = default;
@@ -228,6 +228,7 @@ public class BansheePlayer : MonoBehaviourPun
             }
         }
     }
+    
 
     //Gun Equip
     private void GunEquipControl()
