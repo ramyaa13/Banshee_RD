@@ -8,10 +8,10 @@ using UnityEngine.UIElements;
 public class WeaponController : MonoBehaviour
 {
     public List<WeaponData> weapons = new List<WeaponData>();
-    
+
     public int weaponId;
     public float fireRate = 10f;
-    
+
     public GameObject[] WO;
     private GameObject WeaponObject;
     private GameObject bulletPrefab;
@@ -48,21 +48,21 @@ public class WeaponController : MonoBehaviour
             //}
 
             WO = new GameObject[Gamemanager.instance.groundweapons.Length];
-            
+
             for (int i = 0; i < Gamemanager.instance.groundweapons.Length; i++)
             {
                 WO[i] = Gamemanager.instance.groundweapons[i];
                 Debug.Log(WO[i].name + " : WObj");
             }
-           
+
         }
-       
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     public void WeaponSpawnObj(string name)
@@ -70,7 +70,7 @@ public class WeaponController : MonoBehaviour
         Debug.Log(name + "wsobj entered");
         foreach (var weapon in WO)
         {
-            if(weapon.name == name)
+            if (weapon.name == name)
             {
                 SpawnweaponObj = weapon;
                 Debug.Log(SpawnweaponObj.name + ": spawn weapon object assigned");
@@ -86,7 +86,7 @@ public class WeaponController : MonoBehaviour
         {
             weapon.Weapon.gameObject.SetActive(false);
             weapon.isWeaponEquipped = false;
-           
+
             isGunEquipped = false;
             isSwordEquipped = false;
             BulletDamage = 0f;
@@ -98,7 +98,7 @@ public class WeaponController : MonoBehaviour
     {
         foreach (var weapon in weapons)
         {
-            if(weapon.ID == id)
+            if (weapon.ID == id)
             {
                 //photonView.RPC("DisableWeapons", RpcTarget.AllBuffered);
                 weapon.Weapon.gameObject.SetActive(true);
@@ -112,8 +112,8 @@ public class WeaponController : MonoBehaviour
                 bulletPrefab = weapon.BulletPrefab;
                 bulletSpawnPoint = weapon.BulletSpawnPoint;
                 BulletDamage = weapon.BulletDamage;
-                
-               // Debug.Log("Weapon equipped: " + weapon.WeaponTag);
+
+                // Debug.Log("Weapon equipped: " + weapon.WeaponTag);
             }
         }
     }
@@ -129,9 +129,9 @@ public class WeaponController : MonoBehaviour
                 weapon.Weapon.gameObject.SetActive(true);
                 weapon.isWeaponEquipped = false;
                 weapon.isSwordEquipped = true;
-                
+
                 isGunEquipped = weapon.isWeaponEquipped;
-                isSwordEquipped= weapon.isSwordEquipped;
+                isSwordEquipped = weapon.isSwordEquipped;
                 weapon.Weapon.gameObject.GetComponent<Sword>().UpdateDamage(weapon.SwordDamage);
                 weapon.Weapon.GetComponent<Sword>().LocalPlayerObj = this.gameObject;
 
@@ -142,36 +142,36 @@ public class WeaponController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-            if (isWeaponHeld)
+        if (isWeaponHeld)
+        {
+            return;
+        }
+        foreach (var weapon in weapons)
+        {
+            if (collision.gameObject.tag == weapon.WeaponTag)
             {
-                return;
-            }
-            foreach (var weapon in weapons)
-            {
-                if (collision.gameObject.tag == weapon.WeaponTag)
+                if (weapon.WeaponTag == "Sword")
                 {
-                    if (weapon.WeaponTag == "Sword")
-                    {
-                        Debug.Log(collision.gameObject.tag + weapon.WeaponTag + "collided");
-                        weaponId = weapon.ID;
-                        isSwordDetect = true;
-                        isGunDetect = false;
-                        DestroyweaponObj = collision.gameObject;
-                        WeaponName = collision.gameObject.tag;
-                        WeaponSpawnObj(collision.gameObject.tag);
-                    }
-                    else
-                    {
-                        Debug.Log(collision.gameObject.tag + weapon.WeaponTag + "collided");
-                        weaponId = weapon.ID;
-                        isGunDetect = true;
-                        isSwordDetect = false;
-                        DestroyweaponObj = collision.gameObject;
-                        WeaponName = collision.gameObject.tag;
-                        WeaponSpawnObj(collision.gameObject.tag);
-                    }
+                    Debug.Log(collision.gameObject.tag + weapon.WeaponTag + "collided");
+                    weaponId = weapon.ID;
+                    isSwordDetect = true;
+                    isGunDetect = false;
+                    DestroyweaponObj = collision.gameObject;
+                    WeaponName = collision.gameObject.tag;
+                    WeaponSpawnObj(collision.gameObject.tag);
+                }
+                else
+                {
+                    Debug.Log(collision.gameObject.tag + weapon.WeaponTag + "collided");
+                    weaponId = weapon.ID;
+                    isGunDetect = true;
+                    isSwordDetect = false;
+                    DestroyweaponObj = collision.gameObject;
+                    WeaponName = collision.gameObject.tag;
+                    WeaponSpawnObj(collision.gameObject.tag);
                 }
             }
+        }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
@@ -191,7 +191,7 @@ public class WeaponController : MonoBehaviour
 
     public void EquipWeapon()
     {
-        if(isWeaponHeld == false)
+        if (isWeaponHeld == false)
         {
             if (isGunDetect == true && isSwordDetect == false)
             {
@@ -222,7 +222,7 @@ public class WeaponController : MonoBehaviour
         {
             isGunDetect = false;
             isSwordDetect = false;
-            isWeaponHeld =false;
+            isWeaponHeld = false;
             DestroyweaponObj = null;
             // DisableWeapons();
             photonView.RPC("DisableWeapons", RpcTarget.AllBuffered);
@@ -232,11 +232,11 @@ public class WeaponController : MonoBehaviour
         }
     }
 
-    
+
     public void WeaponEquippedbyPlayer()
     {
-        
-        if(PhotonNetwork.IsMasterClient)
+
+        if (PhotonNetwork.IsMasterClient)
         {
             Gamemanager.instance.GRemoveWO(DestroyweaponObj);
             Gamemanager.instance.GRemoveOO(DestroyweaponObj);
@@ -255,7 +255,7 @@ public class WeaponController : MonoBehaviour
     void RPC_ForceMasterClientWeapon(int viewID)
     {
         PhotonNetwork.Destroy(PhotonView.Find(viewID).gameObject);
-        
+
     }
 
     public void WeaponDroppedbyPlayer()
@@ -268,7 +268,7 @@ public class WeaponController : MonoBehaviour
 
             if (PhotonNetwork.IsMasterClient)
             {
-       
+
                 GameObject Weapon = PhotonNetwork.Instantiate(SpawnweaponObj.name, PlayerPos, Quaternion.identity);
                 Weapon.transform.SetParent(Gamemanager.instance.ObjectContainer, false);
                 Weapon.SetActive(true);
@@ -301,7 +301,7 @@ public class WeaponController : MonoBehaviour
 
     public Vector2 GetGunDirection(Transform referenceTransform)
     {
-        
+
         if (photonView.IsMine && isGunEquipped)
         {
             Vector3 direction = referenceTransform.position - WeaponObject.transform.position;
@@ -310,8 +310,8 @@ public class WeaponController : MonoBehaviour
         }
         Vector3 dir = referenceTransform.position - WeaponObject.transform.position;
         return dir.normalized;
-       // return Vector2.zero;
-       
+        // return Vector2.zero;
+
     }
 
     public void Shoot(bool isFacingRight)
@@ -319,13 +319,13 @@ public class WeaponController : MonoBehaviour
         fireRate = 10f;
         if (Time.time >= nextFireTime && isGunEquipped == true && isSwordEquipped == false)
         {
-            if(bulletSpawnPoint!= null)
+            if (bulletSpawnPoint != null)
             {
                 GameObject bullet = PhotonNetwork.Instantiate(bulletPrefab.name, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
                 bullet.GetComponent<BulletFire>().UpdateDamage(BulletDamage);
                 bullet.GetComponent<BulletFire>().LocalPlayerObj = this.gameObject;
 
-                if(isFacingRight == true)
+                if (isFacingRight == true)
                 {
                     bullet.GetComponent<PhotonView>().RPC("ChangeDirection", RpcTarget.AllBuffered);
                 }
@@ -335,7 +335,7 @@ public class WeaponController : MonoBehaviour
             }
         }
 
-        if(isGunEquipped == false && isSwordEquipped == true)
+        if (isGunEquipped == false && isSwordEquipped == true)
         {
             //sword Attack
         }

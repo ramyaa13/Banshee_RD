@@ -26,7 +26,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
 
     //player respawn
     private bool b_Level;
-    private float LevelTimeAmount = 10;
+    private float LevelTimeAmount = 5; //10
     public TextMeshProUGUI LevelTimer;
     public TextMeshProUGUI LevelCountText;
     public GameObject LevelUI;
@@ -91,7 +91,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         GameStart();
         leaderboard = GetComponent<Leaderboard>();
         randomObjectSpawn = GetComponent<ObjectSpawner>();
-        
+
     }
 
     void GameStart()
@@ -103,11 +103,11 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         Deathcount = 0;
         GemsCount = 0;
         isPlayerDead = 0;
-        LevelTimeAmount = 10f;
+        LevelTimeAmount = 5f;
         d = 0;
         SetHashes();
         EnableLevel();
-        
+
     }
 
 
@@ -255,7 +255,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
                 SpawnGameEssentials();
                 SpawnPlayer();
                 InvokeRepeating(nameof(IsPlayerDeadCounts), 5f, 5f);
-                
+
                 GS = false;
             }
             else
@@ -270,7 +270,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
 
     public void EnableLevel()
     {
-        if(LevelCount == maxLevels)
+        if (LevelCount == maxLevels)
         {
             CancelInvoke("IsPlayerDeadCounts");
             DestroyGameEssentials();
@@ -282,7 +282,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
             CancelInvoke("IsPlayerDeadCounts");
             DestroyGameEssentials();
             LevelUI.SetActive(true);
-            LevelTimeAmount = 10f;
+            LevelTimeAmount = 5f; //10f
             b_Level = true;
             LevelCount += 1;
             LevelCountText.text = "Level : " + LevelCount;
@@ -344,7 +344,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         var sortedPlayerList = (from player in PhotonNetwork.PlayerList orderby player.UserId descending select player).ToList();
 
         int i = 0;
-        
+
         foreach (var player in sortedPlayerList)
         {
             if (player.CustomProperties["IsplayerDead"] != null)
@@ -364,7 +364,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
             i++;
         }
 
-        if(d == roomMaxPlayers)
+        if (d == roomMaxPlayers)
         {
             //next level load
             //cancel invoke
@@ -373,12 +373,12 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         }
         else
         {
-            d= 0;
+            d = 0;
         }
-        
+
     }
 
-    
+
 
     public void UpdateScore()
     {

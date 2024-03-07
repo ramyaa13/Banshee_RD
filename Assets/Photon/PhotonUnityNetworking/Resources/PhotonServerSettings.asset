@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PhotonServerSettings
   m_EditorClassIdentifier: 
   AppSettings:
-    AppIdRealtime: 7cbc4cdb-6fb7-466f-bf7b-a4794a24969e
+    AppIdRealtime: a21f1af2-d0db-4917-9b4a-7db37d07fe94
     AppIdFusion: 
     AppIdChat: 
     AppIdVoice: 
@@ -86,6 +86,7 @@ MonoBehaviour:
   - RPC_ForceMasterClientWeapon
   - CharacterCustomise
   - RPC_ForceMasterSpawnWeapon
+  - DelayedDeathActions
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

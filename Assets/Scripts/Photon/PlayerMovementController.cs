@@ -7,7 +7,7 @@ using UnityEngine.Animations;
 /// </summary>
 public class PlayerMovementController : MonoBehaviour
 {
-    
+
     [Header("Movement")]
     public float MovementSpeed = 100.0f;
     public float GroundedBufferTime = 0.15f;
@@ -21,14 +21,14 @@ public class PlayerMovementController : MonoBehaviour
     private bool IsJumping = false;
     public float GravityScale = 100.0f;
     public float FallGravityMultiplier = 3.0f;
-   // public ParticleSystem LandingParticles;
+    // public ParticleSystem LandingParticles;
 
     [Header("Ground Collision")]
     public Transform FeetPosition;
     public LayerMask GroundLayer;
 
     [Header("Projectile Collision")]
-  //  public ParticleSystem BloodParticles;
+    //  public ParticleSystem BloodParticles;
     public float KnockbackForce = 2000f;
     public float KnockbackTime = 0.25f;
 
@@ -54,8 +54,10 @@ public class PlayerMovementController : MonoBehaviour
     private BansheePlayer BP;
     private bool DisableInputs;
     private bool isRunning;
+    private bool Dead;
     private float horizontalInput;
-   // private ParticleSystem.EmissionModule footstepEmission;
+
+    // private ParticleSystem.EmissionModule footstepEmission;
 
     /// <summary>
     /// Called by Unity when this GameObject starts.
@@ -66,7 +68,7 @@ public class PlayerMovementController : MonoBehaviour
         photonView = GetComponent<PhotonView>();
         BP = GetComponent<BansheePlayer>();
         PlayerAnimator.runtimeAnimatorController = IdleAnimatorController;
-       // footstepEmission = FootstepParticles.emission;
+        // footstepEmission = FootstepParticles.emission;
 
     }
     public void SetAnimator()
@@ -95,29 +97,32 @@ public class PlayerMovementController : MonoBehaviour
     private void Update()
     {
 
-        if(photonView.IsMine && DisableInputs ==true)
+        if (photonView.IsMine && DisableInputs == true)
         {
+            PlayerAnimator.SetFloat("Speed", 0f);
             PlayerAnimator.SetBool("IsRunning", false);
             PlayerAnimator.SetBool("IsWalking", false);
             PlayerAnimator.SetBool("IsJumping", false);
             PlayerAnimator.SetBool("Shoot", false);
+            PlayerAnimator.SetBool("Dead", true);
             runSpeed = 0f;
             isRunning = false;
             horizontalInput = 0f;
         }
 
-        if(photonView.IsMine && DisableInputs == false)
+        if (photonView.IsMine && DisableInputs == false)
         {
 
             runSpeed = 20f;
-                //bool isRunning = Mathf.Abs(horizontalMovement) > 0.1f;
-                //PlayerAnimator.SetBool("isMoving", isRunning);
-                //PlayerAnimator.SetFloat("Horizontal", Mathf.Abs(horizontalMovement));
+            PlayerAnimator.SetBool("Dead",false);
+            //bool isRunning = Mathf.Abs(horizontalMovement) > 0.1f;
+            //PlayerAnimator.SetBool("isMoving", isRunning);
+            //PlayerAnimator.SetFloat("Horizontal", Mathf.Abs(horizontalMovement));
 
             // Player movement
-                horizontalInput = Input.GetAxis("Horizontal");
+            horizontalInput = Input.GetAxis("Horizontal");
             //bool isRunning = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-            isRunning  = true;
+            isRunning = true;
             // Adjust speed based on running
             //float currentSpeed = isRunning ? runSpeed : walkSpeed; // 0 OR 1
             float currentSpeed = runSpeed;
@@ -149,7 +154,7 @@ public class PlayerMovementController : MonoBehaviour
                 PlayerAnimator.SetBool("IsRunning", false);
             }
 
-            if(IsJumping)
+            if (IsJumping)
             {
                 PlayerAnimator.SetBool("IsJumping", IsJumping);
                 PlayerAnimator.SetBool("IsWalking", false);
@@ -160,12 +165,12 @@ public class PlayerMovementController : MonoBehaviour
                 PlayerAnimator.SetBool("IsJumping", IsJumping);
             }
 
-            if (jump)
+            if (jump && isGrounded == true)
             {
                 jumpTimer = Time.time + JumpBufferTime;
-                
+
             }
-            
+
 
             // footstepEmission.rateOverTime = 0f;
 
@@ -208,13 +213,13 @@ public class PlayerMovementController : MonoBehaviour
         {
             CheckIfFalling();
             CheckIfGrounded();
-           // HandleMovement();
+            // HandleMovement();
             HandleJumping();
             //ModifyPhysics();
         }
     }
 
-   
+
     public void PlayerHitsbyBullet(int direction)
     {
         // Add a knockback force to this player based on the direction the projectile was travelling.
@@ -223,7 +228,7 @@ public class PlayerMovementController : MonoBehaviour
         knockbackTimer = Time.time + KnockbackTime;
 
         // Play the blood particle effect.
-       // BloodParticles.Play();
+        // BloodParticles.Play();
 
         // Trigger the hit animation.
         //PlayerAnimator.SetTrigger("Hit");
@@ -245,15 +250,15 @@ public class PlayerMovementController : MonoBehaviour
         // if they hold left/right when landing on a platform.
         if (!falling)
         {
-           // PlayerAnimator.SetTrigger("Land");
-            
+            // PlayerAnimator.SetTrigger("Land");
+
         }
 
         // If the player wasn't falling but is now falling, trigger the Fall animation event.
         if (!wasFalling && falling)
         {
-           // PlayerAnimator.SetTrigger("Fall");
-           
+            // PlayerAnimator.SetTrigger("Fall");
+
         }
     }
 
@@ -262,7 +267,7 @@ public class PlayerMovementController : MonoBehaviour
     /// </summary>
     private void CheckIfGrounded()
     {
-       
+
         // Check if the player was grounded.
         var wasGrounded = isGrounded == true;
 
@@ -271,7 +276,7 @@ public class PlayerMovementController : MonoBehaviour
 
         // Set the isGrounded value.
         isGrounded = collider != null;
-       // Debug.Log(isGrounded + " :isgrounded");
+        // Debug.Log(isGrounded + " :isgrounded");
 
         // If the player is grounded, set the groundedTimer to the maximum grounded buffer time - this controls Hang Time.
         // If the player is not grounded, start reducing the groundedTimer.
@@ -287,7 +292,7 @@ public class PlayerMovementController : MonoBehaviour
         // If the player wasn't grounded but now is, play the landing particle effect.
         if (!wasGrounded && isGrounded)
         {
-           // LandingParticles.Play();
+            // LandingParticles.Play();
         }
     }
 
@@ -303,7 +308,7 @@ public class PlayerMovementController : MonoBehaviour
         }
 
         // Set the player's new velocity based on their horizontal input and their existing y velocity.
-       // r.velocity = new Vector2(horizontalMovement * MovementSpeed, r.velocity.y);
+        // r.velocity = new Vector2(horizontalMovement * MovementSpeed, r.velocity.y);
     }
 
     /// <summary>
@@ -333,13 +338,13 @@ public class PlayerMovementController : MonoBehaviour
             IsJumping = true;
             // Play the jump animation.
             //PlayerAnimator.SetTrigger("Jump");
-            
+
 
         }
         else
         {
             IsJumping = false;
-            
+
         }
     }
 
@@ -419,5 +424,10 @@ public class PlayerMovementController : MonoBehaviour
     public void PlayDeathAnimation()
     {
         PlayerAnimator.SetBool("Dead", true);
+    }
+    public void ResetDeathAnimation()
+    {
+        PlayerAnimator.SetBool("Dead",false);
+
     }
 }

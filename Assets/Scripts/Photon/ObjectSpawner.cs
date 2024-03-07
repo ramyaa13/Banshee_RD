@@ -6,19 +6,19 @@ using System.Linq;
 using Photon.Pun;
 public class ObjectSpawner : MonoBehaviour
 {
-    public enum ObjectType { Gem, Sheild, SprintShoes};
+    public enum ObjectType { Gem, Sheild, SprintShoes };
     public Tilemap tilemap;
     public GameObject[] ObjectPrefabs;
     public GameObject[] WeaponPrefabs;
     public float ShieldProbablity = 0.2f;
     public float SprintShoesProbablity = 0.1f;
-  
+
     public int MaxObjects = 20;
     public int MaxWeaponObjects = 6;
     public float ShieldLifeTime = 10f;
     public float SpawnInterval = 0.5f;
 
-    private List<Vector3> validSpawnPoints  = new List<Vector3>();
+    private List<Vector3> validSpawnPoints = new List<Vector3>();
     private List<GameObject> spawnObjects = new List<GameObject>();
     private List<GameObject> weaponObjects = new List<GameObject>();
     public List<GameObject> OverallObjects = new List<GameObject>();
@@ -35,7 +35,7 @@ public class ObjectSpawner : MonoBehaviour
     void Start()
     {
         photonView = GetComponent<PhotonView>();
-        
+
     }
 
     public void SpawnGE()
@@ -60,24 +60,24 @@ public class ObjectSpawner : MonoBehaviour
         }
     }
 
-   
+
     private void DestroryObjectsNotMasterClient()
     {
-       
+
         Gem = GameObject.FindGameObjectsWithTag("Coin");
 
-        if(Gem.Length!=0)
+        if (Gem.Length != 0)
         {
             Debug.Log(Gem.Length + "gEM COUNT");
             foreach (GameObject g in Gem)
             {
 
-               // Destroy(g);
+                // Destroy(g);
             }
         }
-        
 
-        
+
+
         Sheild = GameObject.FindGameObjectsWithTag("Shield");
 
         if (Sheild.Length != 0)
@@ -85,31 +85,32 @@ public class ObjectSpawner : MonoBehaviour
             Debug.Log(Gem.Length + "sHIELD COUNT");
             foreach (GameObject g in Sheild)
             {
-               // Destroy(g);
+                // Destroy(g);
             }
         }
-            
+
     }
-    
+
     public void SpawnGameObjects()
     {
+        MaxWeaponObjects = 6;
         isOSpawning = true;
         isWSpawning = true;
         StartCoroutine(SpawnObjectsIfNeeded());
         StartCoroutine(SpawnWeaponObjectsIfNeeded());
-       
+
     }
 
-    
+
     public void DestroyGameObjects()
     {
         DestroySpawnObjects();
-       // photonView.RPC("DestroySpawnObjects", RpcTarget.All);
+        // photonView.RPC("DestroySpawnObjects", RpcTarget.All);
     }
     // Update is called once per frame
     void Update()
     {
-        if(!tilemap.gameObject.activeInHierarchy)
+        if (!tilemap.gameObject.activeInHierarchy)
         {
             //level change
         }
@@ -132,7 +133,7 @@ public class ObjectSpawner : MonoBehaviour
     }
     private IEnumerator SpawnObjectsIfNeeded()
     {
-        while(isOSpawning)
+        while (isOSpawning)
         {
             SpawnObjects();
             yield return new WaitForSeconds(SpawnInterval);
@@ -140,7 +141,7 @@ public class ObjectSpawner : MonoBehaviour
     }
     private IEnumerator SpawnWeaponObjectsIfNeeded()
     {
-        while(isWSpawning)
+        while (isWSpawning)
         {
             SpawnWeaponObjects();
             yield return new WaitForSeconds(SpawnInterval);
@@ -155,26 +156,26 @@ public class ObjectSpawner : MonoBehaviour
     private ObjectType RandomObjectType()
     {
         float RandomChoice = Random.value;
-        if(RandomChoice <= ShieldProbablity) //0.5f
+        if (RandomChoice <= ShieldProbablity) //0.5f
         {
-            
+
             return ObjectType.Sheild;
         }
         if (RandomChoice <= (ShieldProbablity + SprintShoesProbablity)) //0.5+0.2
         {
-            
+
             return ObjectType.SprintShoes;
         }
         else
         {
-            
+
             return ObjectType.Gem;
         }
     }
 
     private void SpawnObjects()
     {
-        
+
         if (ActiveObjectsCount() == MaxObjects)
         {
             isOSpawning = false;
@@ -183,27 +184,27 @@ public class ObjectSpawner : MonoBehaviour
         if (validSpawnPoints.Count == 0)
             return;
 
-        
-        Vector3 SpawnPositions = Vector3.zero;
-        bool isValidPositionFound  = false;
 
-        while(!isValidPositionFound && validSpawnPoints.Count > 0)
+        Vector3 SpawnPositions = Vector3.zero;
+        bool isValidPositionFound = false;
+
+        while (!isValidPositionFound && validSpawnPoints.Count > 0)
         {
             int randomIndex = Random.Range(0, validSpawnPoints.Count);
             Vector3 potentialPositions = validSpawnPoints[randomIndex];
             Vector3 lestPosition = potentialPositions + Vector3.left;
             Vector3 rightPosition = potentialPositions + Vector3.right;
 
-            if(!PositionHasObjects(lestPosition) && !PositionHasObjects(rightPosition))
+            if (!PositionHasObjects(lestPosition) && !PositionHasObjects(rightPosition))
             {
                 SpawnPositions = potentialPositions;
                 isValidPositionFound = true;
-                
+
             }
             validSpawnPoints.RemoveAt(randomIndex);
         }
 
-        if(isValidPositionFound)
+        if (isValidPositionFound)
         {
             ObjectType objectType = RandomObjectType();
             // int randomGunIndex = Random.Range(0, ObjectPrefabs.Length);
@@ -226,7 +227,7 @@ public class ObjectSpawner : MonoBehaviour
     {
         if (validSpawnPoints.Count == 0)
             return;
-        if(ActiveWeaponObjectsCount() == MaxWeaponObjects)
+        if (ActiveWeaponObjectsCount() == MaxWeaponObjects)
         {
             isWSpawning = false;
         }
@@ -250,8 +251,8 @@ public class ObjectSpawner : MonoBehaviour
 
         if (isValidPositionFound)
         {
-           // ObjectType objectType = RandomObjectType();
-             int randomGunIndex = Random.Range(0, WeaponPrefabs.Length);
+            // ObjectType objectType = RandomObjectType();
+            int randomGunIndex = Random.Range(0, WeaponPrefabs.Length);
             //Instantiate
             //GameObject gameObject = Instantiate(WeaponPrefabs[randomGunIndex], SpawnPositions, Quaternion.identity);
             GameObject gameObject = PhotonNetwork.Instantiate(WeaponPrefabs[randomGunIndex].name, SpawnPositions, Quaternion.identity);
@@ -261,7 +262,7 @@ public class ObjectSpawner : MonoBehaviour
         }
     }
 
-    
+
     private void DestroySpawnObjects()
     {
         if (PhotonNetwork.IsMasterClient)
@@ -328,7 +329,7 @@ public class ObjectSpawner : MonoBehaviour
     private IEnumerator DestroyGameObjectAfterTime(GameObject gameObject, float time)
     {
         yield return new WaitForSeconds(time);
-        if(gameObject)
+        if (gameObject)
         {
             spawnObjects.Remove(gameObject);
             validSpawnPoints.Add(gameObject.transform.position);
@@ -336,7 +337,7 @@ public class ObjectSpawner : MonoBehaviour
         }
     }
 
-    
+
     private void GatherValidPoints()
     {
         validSpawnPoints.Clear();
@@ -345,12 +346,12 @@ public class ObjectSpawner : MonoBehaviour
         TileBase[] allTiles = tilemap.GetTilesBlock(boundsInt);
         Vector3 start = tilemap.CellToWorld(new Vector3Int(boundsInt.xMin, boundsInt.yMin, 0));
 
-        for(int x = 0; x < boundsInt.size.x; x++)
+        for (int x = 0; x < boundsInt.size.x; x++)
         {
             for (int y = 0; y < boundsInt.size.y; y++)
             {
-                    TileBase tile = allTiles[x + y * boundsInt.size.x];
-                if(tile != null)
+                TileBase tile = allTiles[x + y * boundsInt.size.x];
+                if (tile != null)
                 {
                     Vector3 place = start + new Vector3(x + 3f, y + 5f, 0);
                     validSpawnPoints.Add(place);

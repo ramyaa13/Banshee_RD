@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using UnityEngine.UI;
 using Photon.Pun;
 using static UnityEngine.GraphicsBuffer;
@@ -12,16 +13,22 @@ public class HealthController : MonoBehaviour
 
     public Rigidbody2D rb;
     public GameObject deadsprite;
+    public GameObject MainCharacter;
     public CapsuleCollider2D collider;
     public GameObject playerCanvas;
 
     public BansheePlayer playerScript;
+    public PlayerMovementController PlayerMovementController;
+    public Animator PlayerAnimator;
+
 
     public PhotonView photonView;
-    
+
     void Start()
     {
         photonView = GetComponent<PhotonView>();
+        PlayerMovementController = GetComponent<PlayerMovementController>();
+
     }
     public void CheckHealth()
     {
@@ -31,11 +38,10 @@ public class HealthController : MonoBehaviour
         }
         if (photonView.IsMine && health <= 0)
         {
-            
             Gamemanager.instance.UpdateHealth(0f);
             Gamemanager.instance.UpdateDeathCount();
-           // Gamemanager.instance.EnableRespawn();
-           
+            // Gamemanager.instance.EnableRespawn();
+
             this.GetComponent<PhotonView>().RPC("death", RpcTarget.AllBuffered);
         }
     }
@@ -49,6 +55,11 @@ public class HealthController : MonoBehaviour
         playerScript.DisableInputs = true;
     }
 
+    IEnumerator WaitForThreeSeconds()
+    {
+        // Wait for 3 seconds
+        yield return new WaitForSeconds(3f);
+    }
 
     [PunRPC]
     public void death()
@@ -56,10 +67,41 @@ public class HealthController : MonoBehaviour
         DisableInputs();
         playerScript.DisableInputs = true;
         rb.gravityScale = 0;
+        rb.isKinematic = true;
         collider.enabled = false;
-        deadsprite.gameObject.SetActive(true);
+        rb.simulated = false;
         playerCanvas.SetActive(false);
+
+        PlayerMovementController.PlayDeathAnimation();
+        rb.constraints = RigidbodyConstraints2D.FreezePositionX;
+       
+        photonView.RPC("DelayedDeathActions", RpcTarget.All, PhotonNetwork.Time + 3f);
     }
+    //Custom added scripts 
+    [PunRPC]
+    private void DelayedDeathActions(double executionTime)
+    {
+        if (PhotonNetwork.Time < executionTime)
+        {
+            // Schedule the delayed actions using Invoke
+            float delay = (float)(executionTime - PhotonNetwork.Time);
+            Invoke("CompleteDeath", delay);
+        }
+        else
+        {
+            // If the scheduled time has passed, execute immediately
+            CompleteDeath();
+        }
+    }
+
+    private void CompleteDeath()
+    {
+        // Your additional death actions after waiting for 3 seconds
+
+        MainCharacter.gameObject.SetActive(false);
+        deadsprite.gameObject.SetActive(true);
+    }
+    //waiting scripts
 
     [PunRPC]
     public void Revive()
@@ -67,7 +109,18 @@ public class HealthController : MonoBehaviour
         health = 1;
         fillImage.fillAmount = 1f;
         rb.gravityScale = 1;
+        rb.isKinematic = false;
+        rb.simulated = true;
+
+        MainCharacter.gameObject.SetActive(true);
+
+        PlayerMovementController.ResetDeathAnimation();
+
+        rb.constraints &= ~RigidbodyConstraints2D.FreezePositionX;
+        rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+
         collider.enabled = true;
+
         deadsprite.gameObject.SetActive(false);
         playerCanvas.SetActive(true);
     }
