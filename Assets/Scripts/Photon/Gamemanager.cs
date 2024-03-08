@@ -163,24 +163,28 @@ public class Gamemanager : MonoBehaviourPunCallbacks
                 LocalPlayer.GetComponent<BansheePlayer>().isIdle = true;
                 LocalPlayer.GetComponent<BansheePlayer>().isGunEquipped = false;
                 LocalPlayer.GetComponent<BansheePlayer>().isSwordEquipped = false;
+                LocalPlayer.GetComponent<BansheePlayer>().isdead = false;
                 LocalPlayer.GetComponent<BansheePlayer>().SetPlayerAnimator();
                 break;
             case 2: // player with Gun
                 LocalPlayer.GetComponent<BansheePlayer>().isIdle = false;
                 LocalPlayer.GetComponent<BansheePlayer>().isGunEquipped = true;
                 LocalPlayer.GetComponent<BansheePlayer>().isSwordEquipped = false;
+                LocalPlayer.GetComponent<BansheePlayer>().isdead = false;
                 LocalPlayer.GetComponent<BansheePlayer>().SetPlayerAnimator();
                 break;
             case 3: // player with Sword
                 LocalPlayer.GetComponent<BansheePlayer>().isIdle = false;
                 LocalPlayer.GetComponent<BansheePlayer>().isGunEquipped = false;
                 LocalPlayer.GetComponent<BansheePlayer>().isSwordEquipped = true;
+                LocalPlayer.GetComponent<BansheePlayer>().isdead = false;
                 LocalPlayer.GetComponent<BansheePlayer>().SetPlayerAnimator();
                 break;
             default:
                 LocalPlayer.GetComponent<BansheePlayer>().isIdle = true;
                 LocalPlayer.GetComponent<BansheePlayer>().isGunEquipped = false;
                 LocalPlayer.GetComponent<BansheePlayer>().isSwordEquipped = false;
+                LocalPlayer.GetComponent<BansheePlayer>().isdead = false;
                 LocalPlayer.GetComponent<BansheePlayer>().SetPlayerAnimator();
                 break;
         }
@@ -248,6 +252,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
 
         if (LevelTimeAmount <= 0)
         {
+
             b_Level = false;
             if (GS == true)
             {

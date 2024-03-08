@@ -55,7 +55,6 @@ public class PlayerMovementController : MonoBehaviour
     private bool DisableInputs;
     private bool isRunning;
     private bool isDead;
-    private bool Dead;
     private bool Idle;
     private float horizontalInput;
 

@@ -73,7 +73,7 @@ public class HealthController : MonoBehaviour
 
         rb.constraints = RigidbodyConstraints2D.FreezePositionX;
        
-        photonView.RPC("DelayedDeathActions", RpcTarget.All, PhotonNetwork.Time + 2f);
+        photonView.RPC("DelayedDeathActions", RpcTarget.All, PhotonNetwork.Time + 1.5f);
     }
     //Custom added scripts 
     [PunRPC]
@@ -97,6 +97,8 @@ public class HealthController : MonoBehaviour
         // Your additional death actions after waiting for 3 seconds
         deadsprite.gameObject.SetActive(true);
         MainCharacter.gameObject.SetActive(false);
+        //this.GetComponent<PhotonView>().RPC("Revive", RpcTarget.AllBuffered);
+
 
     }
     //waiting scripts

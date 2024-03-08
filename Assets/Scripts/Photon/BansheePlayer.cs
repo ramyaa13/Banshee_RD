@@ -45,6 +45,7 @@ public class BansheePlayer : MonoBehaviourPun
     public bool isGunEquipped =  false;
     public bool isIdle = true;
     public bool isSwordEquipped =  false;
+    public bool isdead = false;
     
     //CHARACTER CUSTOM
     [SerializeField]

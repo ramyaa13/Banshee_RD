@@ -8,6 +8,16 @@ public class ObjectSpawner : MonoBehaviour
 {
     public enum ObjectType { Gem, Sheild, SprintShoes };
     public Tilemap tilemap;
+    public GameObject[] gameObjects;
+    private int[] cooldowns;
+    private List<GameObject> spawnedPrefabs = new List<GameObject>();
+
+    private int switchCount = 0;
+    private int specialObjectIndex = 0; // Index of the specific game object you want to appear after a certain number of switches
+    private int switchesBeforeSpecialObject = 4; // Number of switches before the specific game object appears
+    private bool isSwitching = false;
+
+
     public GameObject[] ObjectPrefabs;
     public GameObject[] WeaponPrefabs;
     public float ShieldProbablity = 0.2f;
@@ -35,6 +45,7 @@ public class ObjectSpawner : MonoBehaviour
     void Start()
     {
         photonView = GetComponent<PhotonView>();
+        cooldowns = new int[gameObjects.Length];
 
     }
 
@@ -76,8 +87,6 @@ public class ObjectSpawner : MonoBehaviour
             }
         }
 
-
-
         Sheild = GameObject.FindGameObjectsWithTag("Shield");
 
         if (Sheild.Length != 0)
@@ -93,14 +102,60 @@ public class ObjectSpawner : MonoBehaviour
 
     public void SpawnGameObjects()
     {
+
         MaxWeaponObjects = 6;
         isOSpawning = true;
         isWSpawning = true;
+        StartCoroutine(SpawnRandomPrefabCoroutine());
         StartCoroutine(SpawnObjectsIfNeeded());
         StartCoroutine(SpawnWeaponObjectsIfNeeded());
 
     }
+    private int GetRandomIndex()
+    {
+        return Random.Range(0, gameObjects.Length);
+    }
+    public IEnumerator SpawnRandomPrefabCoroutine()
+    {
+        isSwitching=true;
+        int randomIndex = GetRandomIndex();
 
+        // Check if the selected game object is still on cooldown
+        while (cooldowns[randomIndex] > 0)
+        {
+            randomIndex = GetRandomIndex();
+        }
+
+        // Disable all game objects
+        foreach (GameObject obj in gameObjects)
+        {
+            obj.SetActive(false);
+        }
+
+        // Enable the randomly selected game object
+        gameObjects[randomIndex].SetActive(true);
+        specialObjectIndex = randomIndex; // Update specialObjectIndex to match the current active game object
+        switchCount++;
+
+        // Check if it's time to show the special object
+        if (switchCount >= switchesBeforeSpecialObject)
+        {
+            gameObjects[specialObjectIndex].SetActive(true);
+        }
+
+        // Apply cooldown to the selected game object
+        cooldowns[randomIndex] = switchesBeforeSpecialObject;
+
+        // Decrease cooldowns for all game objects
+        for (int j = 0; j < cooldowns.Length; j++)
+        {
+            cooldowns[j] = Mathf.Max(0, cooldowns[j] - 1);
+        }
+
+        isSwitching = false;
+        yield return null;
+    }
+    
 
     public void DestroyGameObjects()
     {
@@ -341,25 +396,43 @@ public class ObjectSpawner : MonoBehaviour
     private void GatherValidPoints()
     {
         validSpawnPoints.Clear();
-        BoundsInt boundsInt = tilemap.cellBounds;
-        Debug.Log(boundsInt + "Bounds Int");
-        TileBase[] allTiles = tilemap.GetTilesBlock(boundsInt);
-        Vector3 start = tilemap.CellToWorld(new Vector3Int(boundsInt.xMin, boundsInt.yMin, 0));
 
-        for (int x = 0; x < boundsInt.size.x; x++)
+        // Instead of using the tilemap, you can manually specify the spawn points or use other logic.
+
+        // For example:
+        for (int i = 0; i < gameObjects.Length; i++)
         {
-            for (int y = 0; y < boundsInt.size.y; y++)
-            {
-                TileBase tile = allTiles[x + y * boundsInt.size.x];
-                if (tile != null)
-                {
-                    Vector3 place = start + new Vector3(x + 3f, y + 5f, 0);
-                    validSpawnPoints.Add(place);
-                }
-            }
+            Vector3 spawnPoint = transform.position + new Vector3(i * 2.0f, 0, 0);
+            validSpawnPoints.Add(spawnPoint);
         }
 
-        Debug.Log(validSpawnPoints.Count + "valid spawn points");
-
+        Debug.Log(validSpawnPoints.Count + " valid spawn points");
     }
 }
+
+
+//    private void GatherValidPoints()
+//    {
+//        validSpawnPoints.Clear();
+//        BoundsInt boundsInt = tilemap.cellBounds;
+//        Debug.Log(boundsInt + "Bounds Int");
+//        TileBase[] allTiles = tilemap.GetTilesBlock(boundsInt);
+//        Vector3 start = tilemap.CellToWorld(new Vector3Int(boundsInt.xMin, boundsInt.yMin, 0));
+
+//        for (int x = 0; x < boundsInt.size.x; x++)
+//        {
+//            for (int y = 0; y < boundsInt.size.y; y++)
+//            {
+//                TileBase tile = allTiles[x + y * boundsInt.size.x];
+//                if (tile != null)
+//                {
+//                    Vector3 place = start + new Vector3(x + 3f, y + 5f, 0);
+//                    validSpawnPoints.Add(place);
+//                }
+//            }
+//        }
+
+//        Debug.Log(validSpawnPoints.Count + "valid spawn points");
+
+//    }
+//}
