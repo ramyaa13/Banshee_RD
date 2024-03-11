@@ -203,6 +203,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
 
         LevelUI.SetActive(false);
         float randomSpawn = Random.Range(-20, 50);
+
         // PhotonNetwork.Instantiate(PlayerPrefab.name, new Vector2(PlayerPrefab.transform.position.x * randomSpawn, PlayerPrefab.transform.position.y), Quaternion.identity, 0);
         PhotonNetwork.Instantiate(PlayerPrefab.name, new Vector2(PlayerPrefab.transform.position.x + randomSpawn, PlayerPrefab.transform.position.y), Quaternion.identity, 0);
         StartScreen.gameObject.SetActive(false);
@@ -214,6 +215,8 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         isPlayerDead = 0;
         SetHashes();
         leaderboard.SetPlayerName(LocalPlayer.GetComponent<BansheePlayer>().PlayerName);
+        
+
     }
 
     public void SpawnGameEssentials()
@@ -222,6 +225,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         if (Data.instance.isPlayerMasterClient == true)
         {
             randomObjectSpawn.SpawnGE();
+            
             Debug.Log("It's a master client");
         }
         else
@@ -237,6 +241,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         if (Data.instance.isPlayerMasterClient == true)
         {
             randomObjectSpawn.DestroyGE();
+            randomObjectSpawn.DestroyBackground();
             Debug.Log("It's a master client");
         }
         else
@@ -360,7 +365,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
                     d++;
                     Debug.Log(d + "total player died");
                 }
-                Debug.Log(x[i] + player.NickName + i);
+                //Debug.Log(x[i] + player.NickName + i);
             }
             else
             {

@@ -11,6 +11,8 @@ TagManager:
   - Weapon
   - Sword
   - Shield
+  - Tilemapping
+  - SwitchableObject
   layers:
   - Default
   - TransparentFX

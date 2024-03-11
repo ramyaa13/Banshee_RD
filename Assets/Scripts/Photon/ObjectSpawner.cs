@@ -7,10 +7,11 @@ using Photon.Pun;
 public class ObjectSpawner : MonoBehaviour
 {
     public enum ObjectType { Gem, Sheild, SprintShoes };
-    public Tilemap tilemap;
-    public GameObject[] gameObjects;
+    //public Tilemap tilemap;
+    
+    public GameObject[] backgroundPrefabs;
     private int[] cooldowns;
-    private List<GameObject> spawnedPrefabs = new List<GameObject>();
+    private List<GameObject> objectPool = new List<GameObject>();
 
     private int switchCount = 0;
     private int specialObjectIndex = 0; // Index of the specific game object you want to appear after a certain number of switches
@@ -38,36 +39,173 @@ public class ObjectSpawner : MonoBehaviour
 
     private bool isOSpawning = false;
     private bool isWSpawning = false;
-
+    private Gamemanager gameManager;
     public GameObject[] Gem;
     public GameObject[] Sheild;
+
+    public GameObject selectedBackgroundPrefab;
     // Start is called before the first frame update
     void Start()
     {
         photonView = GetComponent<PhotonView>();
-        cooldowns = new int[gameObjects.Length];
+        gameManager = FindObjectOfType<Gamemanager>();
+        
+       
+    }
+    
+    public void SpawnBackground()
+    {
+        //selectedBackgroundPrefab = backgroundPrefabs[Random.Range(0, backgroundPrefabs.Length)];
+        //Vector3 worldPosition = transform.position;
+        //PhotonNetwork.Instantiate(selectedBackgroundPrefab.name, worldPosition, Quaternion.identity);
+        int randomIndex = GetRandomIndex();
+
+        // Check if the selected background is still on cooldown
+        while (cooldowns[randomIndex] > 0)
+        {
+            randomIndex = GetRandomIndex();
+        }
+
+        DestroyBackground();
+
+        // Instantiate the randomly selected background
+        InstantiateBackground(randomIndex);
+        specialObjectIndex = randomIndex; // Update specialObjectIndex to match the current active background
+        switchCount++;
+
+        // Check if it's time to show the special background
+        if (switchCount >= switchesBeforeSpecialObject)
+        {
+            InstantiateSpecialBackground(specialObjectIndex);
+        }
+
+        // Apply cooldown to the selected background
+        ApplyCooldown(randomIndex, switchesBeforeSpecialObject);
 
     }
 
+    public void DestroyBackground()
+    {
+        //if (selectedBackgroundPrefab != null)
+        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("SwitchableObject"))
+
+        {
+            PhotonNetwork.Destroy(obj);
+            Debug.Log("Destroyedmaps" + obj);
+        }
+    }
+    private void InstantiateBackground(int index)
+    {
+        PhotonNetwork.Instantiate(backgroundPrefabs[index].name, Vector3.zero, Quaternion.identity);
+    }
+
+    private void InstantiateSpecialBackground(int index)
+    {
+        PhotonNetwork.Instantiate(backgroundPrefabs[index].name, Vector3.zero, Quaternion.identity);
+    }
+
+    private void ApplyCooldown(int index, int cooldown)
+    {
+        cooldowns[index] = cooldown;
+    }
+
+    private int GetRandomIndex()
+    {
+        return Random.Range(0, backgroundPrefabs.Length);
+    }
+
+    public void SpawnGunsNearPlayer()
+    {
+                // Adjust the range and number of guns as needed
+                int numberOfGuns = 3;
+                float spawnRadius = 5f;
+
+                for (int i = 0; i < numberOfGuns; i++)
+                {
+                    // Randomly choose a gun prefab
+                    GameObject selectedGunPrefab = WeaponPrefabs[Random.Range(0, WeaponPrefabs.Length)];
+                    float randomSpawn = Random.Range(-20, 50);
+                    // Calculate a random position near the player within the spawnRadius
+                    Vector3 randomOffset = Random.insideUnitCircle * spawnRadius;
+                    
+
+                    // Instantiate the gun prefab at the calculated position
+                    PhotonNetwork.Instantiate(selectedGunPrefab.name, new Vector2(selectedGunPrefab.transform.position.x + randomSpawn, selectedGunPrefab.transform.position.y), Quaternion.identity);
+                }
+         
+    }
+    private void ShuffleObjectPool()
+    {
+        int n = objectPool.Count;
+        Debug.Log(n);
+        while (n > 1)
+        {
+            n--;
+            int k = Random.Range(0, n + 1);
+            GameObject value = objectPool[k];
+            objectPool[k] = objectPool[n];
+            objectPool[n] = value;
+        }
+    }
+    private GameObject GetRandomObject()
+    {
+        if (objectPool.Count == 0)
+        {
+            Debug.LogWarning("Object pool is empty!");
+            return null;
+        }
+
+        GameObject selectedObject = objectPool[0];
+        objectPool.RemoveAt(0);
+
+        if (objectPool.Count == 0)
+        {
+            // Refill and shuffle the pool when it becomes empty
+            
+            ShuffleObjectPool();
+        }
+
+        return selectedObject;
+    }
+
+
     public void SpawnGE()
     {
-        if (PhotonNetwork.IsMasterClient)
+        
+        if (PhotonNetwork.IsConnected)
         {
-            GatherValidPoints();
-            SpawnGameObjects();
+            if (PhotonNetwork.IsMasterClient)
+            {
+                cooldowns = new int[backgroundPrefabs.Length];
+
+                SpawnBackground();
+                SpawnGunsNearPlayer();
+                SpawnGameObjects();
+                
+
+                ShuffleObjectPool(); // Shuffle the pool initially
+                GatherValidPoints();
+
+                SpawnWeaponsInTilemap();
+
+            }
         }
     }
 
     public void DestroyGE()
     {
-        if (PhotonNetwork.IsMasterClient)
+        if (PhotonNetwork.IsConnected)
         {
-            DestroyGameObjects();
-        }
-        else
-        {
-            // photonView.RPC("DestroryObjectsNotMasterClient", RpcTarget.All);
-            //estroryObjectsNotMasterClient();
+            if (PhotonNetwork.IsMasterClient)
+            {
+                DestroyGameObjects();
+                DestroyBackground();
+            }
+            else
+            {
+                // photonView.RPC("DestroryObjectsNotMasterClient", RpcTarget.All);
+                //estroryObjectsNotMasterClient();
+            }
         }
     }
 
@@ -106,73 +244,33 @@ public class ObjectSpawner : MonoBehaviour
         MaxWeaponObjects = 6;
         isOSpawning = true;
         isWSpawning = true;
-        StartCoroutine(SpawnRandomPrefabCoroutine());
+  
         StartCoroutine(SpawnObjectsIfNeeded());
         StartCoroutine(SpawnWeaponObjectsIfNeeded());
 
     }
-    private int GetRandomIndex()
-    {
-        return Random.Range(0, gameObjects.Length);
-    }
-    public IEnumerator SpawnRandomPrefabCoroutine()
-    {
-        isSwitching=true;
-        int randomIndex = GetRandomIndex();
-
-        // Check if the selected game object is still on cooldown
-        while (cooldowns[randomIndex] > 0)
-        {
-            randomIndex = GetRandomIndex();
-        }
-
-        // Disable all game objects
-        foreach (GameObject obj in gameObjects)
-        {
-            obj.SetActive(false);
-        }
-
-        // Enable the randomly selected game object
-        gameObjects[randomIndex].SetActive(true);
-        specialObjectIndex = randomIndex; // Update specialObjectIndex to match the current active game object
-        switchCount++;
-
-        // Check if it's time to show the special object
-        if (switchCount >= switchesBeforeSpecialObject)
-        {
-            gameObjects[specialObjectIndex].SetActive(true);
-        }
-
-        // Apply cooldown to the selected game object
-        cooldowns[randomIndex] = switchesBeforeSpecialObject;
-
-        // Decrease cooldowns for all game objects
-        for (int j = 0; j < cooldowns.Length; j++)
-        {
-            cooldowns[j] = Mathf.Max(0, cooldowns[j] - 1);
-        }
-
-        isSwitching = false;
-        yield return null;
-    }
+    
     
 
     public void DestroyGameObjects()
     {
         DestroySpawnObjects();
+        
         // photonView.RPC("DestroySpawnObjects", RpcTarget.All);
     }
     // Update is called once per frame
     void Update()
     {
-        if (!tilemap.gameObject.activeInHierarchy)
-        {
-            //level change
-        }
+        //if (!tilemap.gameobject.activeinhierarchy)
+        //{
+        //    //level change
+        //}
         //if(!isSpawning && ActiveObjectsCount() < MaxObjects)
         //{
         //    StartCoroutine(SpawnObjectsIfNeeded());
         //}
+        
+
     }
 
     private int ActiveObjectsCount()
@@ -230,7 +328,6 @@ public class ObjectSpawner : MonoBehaviour
 
     private void SpawnObjects()
     {
-
         if (ActiveObjectsCount() == MaxObjects)
         {
             isOSpawning = false;
@@ -242,7 +339,9 @@ public class ObjectSpawner : MonoBehaviour
 
         Vector3 SpawnPositions = Vector3.zero;
         bool isValidPositionFound = false;
+        GameObject selectedObject = GetRandomObject();
 
+        
         while (!isValidPositionFound && validSpawnPoints.Count > 0)
         {
             int randomIndex = Random.Range(0, validSpawnPoints.Count);
@@ -265,10 +364,13 @@ public class ObjectSpawner : MonoBehaviour
             // int randomGunIndex = Random.Range(0, ObjectPrefabs.Length);
             //Instantiate
             //GameObject gameObject = Instantiate(ObjectPrefabs[(int)objectType], SpawnPositions, Quaternion.identity);
-            GameObject gameObject = PhotonNetwork.Instantiate(ObjectPrefabs[(int)objectType].name, SpawnPositions, Quaternion.identity);
-            gameObject.transform.SetParent(ObjectContainer, false);
-            spawnObjects.Add(gameObject);
-            OverallObjects.Add(gameObject);
+            if (selectedObject != null)
+            {
+                GameObject gameObject = PhotonNetwork.Instantiate(ObjectPrefabs[(int)objectType].name, SpawnPositions, Quaternion.identity);
+                gameObject.transform.SetParent(ObjectContainer, false);
+                spawnObjects.Add(gameObject);
+                OverallObjects.Add(gameObject);
+            }
             ////Destroy Shield only after time
             //if(objectType != ObjectType.Weapon)
             //{
@@ -277,7 +379,33 @@ public class ObjectSpawner : MonoBehaviour
 
         }
     }
+    private void SpawnWeaponAtRandomPoint()
+    {
+        if (validSpawnPoints.Count == 0)
+            return;
 
+        int randomIndex = Random.Range(0, validSpawnPoints.Count);
+        Vector3 spawnPosition = validSpawnPoints[randomIndex];
+
+        int randomGunIndex = Random.Range(0, WeaponPrefabs.Length);
+        GameObject gameObject = PhotonNetwork.Instantiate(WeaponPrefabs[randomGunIndex].name, spawnPosition, Quaternion.identity);
+        gameObject.transform.SetParent(WeaponContainer, false);
+        weaponObjects.Add(gameObject);
+        OverallObjects.Add(gameObject);
+
+        // Remove the spawned point to avoid spawning another weapon at the same position
+        validSpawnPoints.RemoveAt(randomIndex);
+    }
+    private void SpawnWeaponsInTilemap()
+    {
+        if (validSpawnPoints.Count == 0)
+            return;
+
+        while (ActiveWeaponObjectsCount() < MaxWeaponObjects && validSpawnPoints.Count > 0)
+        {
+            SpawnWeaponAtRandomPoint();
+        }
+    }
     private void SpawnWeaponObjects()
     {
         if (validSpawnPoints.Count == 0)
@@ -285,36 +413,10 @@ public class ObjectSpawner : MonoBehaviour
         if (ActiveWeaponObjectsCount() == MaxWeaponObjects)
         {
             isWSpawning = false;
+            return;
         }
-        Vector3 SpawnPositions = Vector3.zero;
-        bool isValidPositionFound = false;
-
-        while (!isValidPositionFound && validSpawnPoints.Count > 0)
-        {
-            int randomIndex = Random.Range(0, validSpawnPoints.Count);
-            Vector3 potentialPositions = validSpawnPoints[randomIndex];
-            Vector3 lestPosition = potentialPositions + Vector3.left;
-            Vector3 rightPosition = potentialPositions + Vector3.right;
-
-            if (!PositionHasObjects(lestPosition) && !PositionHasObjects(rightPosition))
-            {
-                SpawnPositions = potentialPositions;
-                isValidPositionFound = true;
-            }
-            validSpawnPoints.RemoveAt(randomIndex);
-        }
-
-        if (isValidPositionFound)
-        {
-            // ObjectType objectType = RandomObjectType();
-            int randomGunIndex = Random.Range(0, WeaponPrefabs.Length);
-            //Instantiate
-            //GameObject gameObject = Instantiate(WeaponPrefabs[randomGunIndex], SpawnPositions, Quaternion.identity);
-            GameObject gameObject = PhotonNetwork.Instantiate(WeaponPrefabs[randomGunIndex].name, SpawnPositions, Quaternion.identity);
-            gameObject.transform.SetParent(WeaponContainer, false);
-            weaponObjects.Add(gameObject);
-            OverallObjects.Add(gameObject);
-        }
+        SpawnWeaponAtRandomPoint();
+        
     }
 
 
@@ -396,18 +498,32 @@ public class ObjectSpawner : MonoBehaviour
     private void GatherValidPoints()
     {
         validSpawnPoints.Clear();
-
-        // Instead of using the tilemap, you can manually specify the spawn points or use other logic.
-
-        // For example:
-        for (int i = 0; i < gameObjects.Length; i++)
+        Tilemap[] tilemaps = FindObjectsOfType<Tilemap>();  // Find all tilemaps in the scene
+        foreach (Tilemap map in tilemaps)
         {
-            Vector3 spawnPoint = transform.position + new Vector3(i * 2.0f, 0, 0);
-            validSpawnPoints.Add(spawnPoint);
-        }
+            if (map.gameObject.layer == LayerMask.GetMask("Tilemapping"))
+            {
+                BoundsInt bounds = map.cellBounds;
 
+                for (int x = bounds.x; x < bounds.x + bounds.size.x; x++)
+                {
+                    for (int y = bounds.y; y < bounds.y + bounds.size.y; y++)
+                    {
+                        Vector3Int cellPosition = new Vector3Int(x, y, 0);
+                        Vector3 spawnPoint = map.GetCellCenterWorld(cellPosition);
+
+                        if (!PositionHasObjects(spawnPoint))
+                        {
+                            validSpawnPoints.Add(spawnPoint);
+                        }
+                    }
+                }
+            }
+        }
         Debug.Log(validSpawnPoints.Count + " valid spawn points");
     }
+
+
 }
 
 
