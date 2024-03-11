@@ -8045,8 +8045,8 @@ MonoBehaviour:
   KnockbackTime: 0.25
   PlayerAnimator: {fileID: 8383633746085478225}
   IdleAnimatorController: {fileID: 9100000, guid: 59c2ffff157a0cd45bdb8a339423ebd8, type: 2}
-  GunHoldAnimatorController: {fileID: 9100000, guid: 0071e075579c34f4da30d4e2abcac2c4, type: 2}
-  katanaHoldAnimatorController: {fileID: 9100000, guid: b612ae81cb763ad4b9da7d1afe917b10, type: 2}
+  GunHoldAnimatorController: {fileID: 9100000, guid: cbcaba48fb884c44f96cb7c251605506, type: 2}
+  katanaHoldAnimatorController: {fileID: 9100000, guid: 2e6b23c318b9c034fb72c0835efbd756, type: 2}
   ResetTimeAmount: 0.3
 --- !u!114 &1332959020604159694
 MonoBehaviour:
