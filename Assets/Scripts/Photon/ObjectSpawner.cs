@@ -180,13 +180,13 @@ public class ObjectSpawner : MonoBehaviour
 
                 SpawnBackground();
                 SpawnGunsNearPlayer();
-                SpawnGameObjects();
+                //SpawnGameObjects();
                 
 
                 ShuffleObjectPool(); // Shuffle the pool initially
                 GatherValidPoints();
 
-                SpawnWeaponsInTilemap();
+                //SpawnWeaponsInTilemap();
 
             }
         }
