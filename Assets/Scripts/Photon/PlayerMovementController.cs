@@ -54,7 +54,7 @@ public class PlayerMovementController : MonoBehaviour
     private BansheePlayer BP;
     private bool DisableInputs;
     private bool isRunning;
-    private bool isDead;
+    //private bool isDead;
     private bool Idle;
     private float horizontalInput;
 

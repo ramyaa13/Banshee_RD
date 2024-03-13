@@ -305,10 +305,5 @@ public class BansheePlayer : MonoBehaviourPun
         }
     }
 
-    
-
-
-   
-
 
 }

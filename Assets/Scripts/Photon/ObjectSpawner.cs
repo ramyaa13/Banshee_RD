@@ -29,7 +29,7 @@ public class ObjectSpawner : MonoBehaviour
 
     public int MaxObjects = 20;
     public int MaxWeaponObjects = 6;
-    public int maxGunsToSpawn = 6; 
+    //public int maxGunsToSpawn = 6; 
     public float ShieldLifeTime = 10f;
     public float SpawnInterval = 0.5f;
 
@@ -59,9 +59,6 @@ public class ObjectSpawner : MonoBehaviour
     
     public void SpawnBackground()
     {
-        //selectedBackgroundPrefab = backgroundPrefabs[Random.Range(0, backgroundPrefabs.Length)];
-        //Vector3 worldPosition = transform.position;
-        //PhotonNetwork.Instantiate(selectedBackgroundPrefab.name, worldPosition, Quaternion.identity);
         int randomIndex = GetRandomIndex();
 
         // Check if the selected background is still on cooldown
@@ -118,42 +115,8 @@ public class ObjectSpawner : MonoBehaviour
         return Random.Range(0, backgroundPrefabs.Length);
     }
 
-    public void SpawnGunsNearPlayer()
-    {
-                // Adjust the range and number of guns as needed
-                int numberOfGuns = 3;
-                float spawnRadius = 5f;
-
-                for (int i = 0; i < numberOfGuns; i++)
-                {
-                    // Randomly choose a gun prefab
-                    GameObject selectedGunPrefab = WeaponPrefabs[Random.Range(0, WeaponPrefabs.Length)];
-                    float randomSpawn = Random.Range(-20, 50);
-                    // Calculate a random position near the player within the spawnRadius
-                    Vector3 randomOffset = Random.insideUnitCircle * spawnRadius;
-                    
-
-                    // Instantiate the gun prefab at the calculated position
-                    PhotonNetwork.Instantiate(selectedGunPrefab.name, new Vector2(selectedGunPrefab.transform.position.x + randomSpawn, selectedGunPrefab.transform.position.y), Quaternion.identity);
-                }
-         
-    }
-    public void DestroyGunsNearPlayer()
-    {
-        //if (selectedBackgroundPrefab != null)
-        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Pistol"))
-        {
-            PhotonNetwork.Destroy(obj);
-        }
-        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Gun"))
-        {
-            PhotonNetwork.Destroy(obj);
-        }
-        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Weapon"))
-        {
-            PhotonNetwork.Destroy(obj);
-        }
-    }
+    
+    
     private void ShuffleObjectPool()
     {
         int n = objectPool.Count;
@@ -221,7 +184,7 @@ public class ObjectSpawner : MonoBehaviour
                 DestroyGameObjects();
                 DestroyBackground();
                 DestroySpawnedGuns();
-                //DestroyGunsNearPlayer();
+             
             }
             else
             {
@@ -283,15 +246,7 @@ public class ObjectSpawner : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //if (!tilemap.gameobject.activeinhierarchy)
-        //{
-        //    //level change
-        //}
-        //if(!isSpawning && ActiveObjectsCount() < MaxObjects)
-        //{
-        //    StartCoroutine(SpawnObjectsIfNeeded());
-        //}
-        
+               
 
     }
 
@@ -318,7 +273,7 @@ public class ObjectSpawner : MonoBehaviour
     {
         while (isWSpawning)
         {
-            SpawnWeaponObjects();
+            //SpawnWeaponObjects();
             yield return new WaitForSeconds(SpawnInterval);
         }
     }
@@ -401,46 +356,7 @@ public class ObjectSpawner : MonoBehaviour
 
         }
     }
-    private void SpawnWeaponAtRandomPoint()
-    {
-        if (validSpawnPoints.Count == 0)
-            return;
-
-        int randomIndex = Random.Range(0, validSpawnPoints.Count);
-        Vector3 spawnPosition = validSpawnPoints[randomIndex];
-
-        int randomGunIndex = Random.Range(0, WeaponPrefabs.Length);
-        GameObject gameObject = PhotonNetwork.Instantiate(WeaponPrefabs[randomGunIndex].name, spawnPosition, Quaternion.identity);
-        gameObject.transform.SetParent(WeaponContainer, false);
-        weaponObjects.Add(gameObject);
-        OverallObjects.Add(gameObject);
-
-        // Remove the spawned point to avoid spawning another weapon at the same position
-        validSpawnPoints.RemoveAt(randomIndex);
-    }
-    private void SpawnWeaponsInTilemap()
-    {
-        if (validSpawnPoints.Count == 0)
-            return;
-
-        while (ActiveWeaponObjectsCount() < MaxWeaponObjects && validSpawnPoints.Count > 0)
-        {
-            SpawnWeaponAtRandomPoint();
-        }
-    }
-    private void SpawnWeaponObjects()
-    {
-        if (validSpawnPoints.Count == 0)
-            return;
-        if (ActiveWeaponObjectsCount() == MaxWeaponObjects)
-        {
-            isWSpawning = false;
-            return;
-        }
-        SpawnWeaponAtRandomPoint();
-        
-    }
-
+    
 
     private void DestroySpawnObjects()
     {
@@ -556,8 +472,8 @@ public class ObjectSpawner : MonoBehaviour
         }
 
         int gunsSpawned = 0;
-        spawnedGuns = new GameObject[maxGunsToSpawn];
-        while (gunsSpawned < maxGunsToSpawn)
+        spawnedGuns = new GameObject[MaxWeaponObjects];
+        while (gunsSpawned < MaxWeaponObjects)
         {
             GameObject randomPoint = Points[Random.Range(0, Points.Length)];
             int randomGunIndex = Random.Range(0, WeaponPrefabs.Length);
