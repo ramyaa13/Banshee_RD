@@ -262,8 +262,10 @@ public class Gamemanager : MonoBehaviourPunCallbacks
             if (GS == true)
             {
                 LevelTimer.text = "Level Started!!!";
+
                 SpawnGameEssentials();
                 SpawnPlayer();
+
                 InvokeRepeating(nameof(IsPlayerDeadCounts), 5f, 5f);
 
                 GS = false;

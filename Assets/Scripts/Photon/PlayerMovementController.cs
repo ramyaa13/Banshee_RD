@@ -114,7 +114,7 @@ public class PlayerMovementController : MonoBehaviour
         if (photonView.IsMine && DisableInputs == false)
         {
 
-            runSpeed = 20f;
+            runSpeed = 40f;
             PlayerAnimator.SetBool("Dead",false);
             //bool isRunning = Mathf.Abs(horizontalMovement) > 0.1f;
             //PlayerAnimator.SetBool("isMoving", isRunning);

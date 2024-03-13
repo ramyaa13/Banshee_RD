@@ -8029,14 +8029,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 689c690d2db6c2247916becf661e8b14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MovementSpeed: 40
-  GroundedBufferTime: 5
-  walkSpeed: 20
-  runSpeed: 35
-  JumpBufferTime: 5
+  MovementSpeed: 20
+  GroundedBufferTime: 0.25
+  walkSpeed: 10
+  runSpeed: 40
+  JumpBufferTime: 2.5
   JumpForce: 15
-  GravityScale: 20
-  FallGravityMultiplier: 1
+  GravityScale: 40
+  FallGravityMultiplier: 4.5
   FeetPosition: {fileID: 5157202288219067916}
   GroundLayer:
     serializedVersion: 2

@@ -13,6 +13,7 @@ TagManager:
   - Shield
   - Tilemapping
   - SwitchableObject
+  - SpawnPoints
   layers:
   - Default
   - TransparentFX

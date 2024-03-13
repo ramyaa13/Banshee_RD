@@ -21,11 +21,15 @@ public class ObjectSpawner : MonoBehaviour
 
     public GameObject[] ObjectPrefabs;
     public GameObject[] WeaponPrefabs;
+   // public GameObject[] spawnedGuns;
+    private GameObject[] spawnedGuns;
+
     public float ShieldProbablity = 0.2f;
     public float SprintShoesProbablity = 0.1f;
 
     public int MaxObjects = 20;
     public int MaxWeaponObjects = 6;
+    public int maxGunsToSpawn = 6; 
     public float ShieldLifeTime = 10f;
     public float SpawnInterval = 0.5f;
 
@@ -134,6 +138,22 @@ public class ObjectSpawner : MonoBehaviour
                 }
          
     }
+    public void DestroyGunsNearPlayer()
+    {
+        //if (selectedBackgroundPrefab != null)
+        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Pistol"))
+        {
+            PhotonNetwork.Destroy(obj);
+        }
+        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Gun"))
+        {
+            PhotonNetwork.Destroy(obj);
+        }
+        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Weapon"))
+        {
+            PhotonNetwork.Destroy(obj);
+        }
+    }
     private void ShuffleObjectPool()
     {
         int n = objectPool.Count;
@@ -179,10 +199,10 @@ public class ObjectSpawner : MonoBehaviour
                 cooldowns = new int[backgroundPrefabs.Length];
 
                 SpawnBackground();
-                SpawnGunsNearPlayer();
-                //SpawnGameObjects();
-                
 
+                //SpawnGameObjects();
+
+                SpawnGunsRandomly();
                 ShuffleObjectPool(); // Shuffle the pool initially
                 GatherValidPoints();
 
@@ -200,6 +220,8 @@ public class ObjectSpawner : MonoBehaviour
             {
                 DestroyGameObjects();
                 DestroyBackground();
+                DestroySpawnedGuns();
+                //DestroyGunsNearPlayer();
             }
             else
             {
@@ -523,32 +545,46 @@ public class ObjectSpawner : MonoBehaviour
         Debug.Log(validSpawnPoints.Count + " valid spawn points");
     }
 
+    void SpawnGunsRandomly()
+    {
+        GameObject[] Points = GameObject.FindGameObjectsWithTag("SpawnPoints");
 
+        if (Points.Length == 0 || WeaponPrefabs.Length == 0)
+        {
+            Debug.LogError("No spawn points or gun prefabs assigned.");
+            return;
+        }
+
+        int gunsSpawned = 0;
+        spawnedGuns = new GameObject[maxGunsToSpawn];
+        while (gunsSpawned < maxGunsToSpawn)
+        {
+            GameObject randomPoint = Points[Random.Range(0, Points.Length)];
+            int randomGunIndex = Random.Range(0, WeaponPrefabs.Length);
+            GameObject selectedGunPrefab = WeaponPrefabs[randomGunIndex];
+
+            // Check if the spawn point is empty before instantiating a gun
+            if (randomPoint.transform.childCount == 0)
+            {
+                // Instantiate the selected gun prefab at the position of the spawn point
+                GameObject spawnedGun = PhotonNetwork.Instantiate(selectedGunPrefab.name, randomPoint.transform.position, Quaternion.identity);
+                spawnedGuns[gunsSpawned] = spawnedGun;
+                gunsSpawned++;
+            }
+        }
+    }
+
+    void DestroySpawnedGuns()
+    {
+        if (spawnedGuns != null)
+        {
+            foreach (GameObject gun in spawnedGuns)
+            {
+                if (gun != null)
+                {
+                    PhotonNetwork.Destroy(gun);
+                }
+            }
+        }
+    }
 }
-
-
-//    private void GatherValidPoints()
-//    {
-//        validSpawnPoints.Clear();
-//        BoundsInt boundsInt = tilemap.cellBounds;
-//        Debug.Log(boundsInt + "Bounds Int");
-//        TileBase[] allTiles = tilemap.GetTilesBlock(boundsInt);
-//        Vector3 start = tilemap.CellToWorld(new Vector3Int(boundsInt.xMin, boundsInt.yMin, 0));
-
-//        for (int x = 0; x < boundsInt.size.x; x++)
-//        {
-//            for (int y = 0; y < boundsInt.size.y; y++)
-//            {
-//                TileBase tile = allTiles[x + y * boundsInt.size.x];
-//                if (tile != null)
-//                {
-//                    Vector3 place = start + new Vector3(x + 3f, y + 5f, 0);
-//                    validSpawnPoints.Add(place);
-//                }
-//            }
-//        }
-
-//        Debug.Log(validSpawnPoints.Count + "valid spawn points");
-
-//    }
-//}
