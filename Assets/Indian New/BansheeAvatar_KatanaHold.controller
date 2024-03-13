@@ -179,7 +179,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 6ddeb2147867417418108f2977c13a72, type: 2}
+  m_Motion: {fileID: 7400000, guid: 8b3d91bb8521200498c3417721d481ca, type: 2}
   m_Tag: 
   m_SpeedParameter: Speed
   m_MirrorParameter: 
@@ -312,7 +312,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 25a0e64adc8251349bde9381a8623ac4, type: 2}
+  m_Motion: {fileID: 7400000, guid: aba063983b53d824c88a3d2e435c62b7, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: IsRunning
@@ -326,7 +326,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Shooting Pistol
-  m_Speed: 10
+  m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 324508195183978710}
@@ -340,7 +340,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: f1ed44c32fbd85340a8e1221d3a83248, type: 2}
+  m_Motion: {fileID: 7400000, guid: 6cfd36b9d6241984faca1dcea2d7b111, type: 2}
   m_Tag: 
   m_SpeedParameter: Speed
   m_MirrorParameter: 
@@ -1150,7 +1150,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 1dc2891c18b6a3a469a654bf9a462f27, type: 2}
+  m_Motion: {fileID: 7400000, guid: 74226111c9f87914f91a4b9d371a1bd9, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -1180,7 +1180,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: c79f0e0c6e061774689526647e81bdc7, type: 2}
+  m_Motion: {fileID: 7400000, guid: 6a90143b473e64a48860f0cb872e2b1f, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 

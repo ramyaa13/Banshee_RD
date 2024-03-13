@@ -4,11 +4,14 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Linq;
 using Photon.Pun;
+using System;
+using Random = UnityEngine.Random;
+
 public class ObjectSpawner : MonoBehaviour
 {
     public enum ObjectType { Gem, Sheild, SprintShoes };
     //public Tilemap tilemap;
-    
+
     public GameObject[] backgroundPrefabs;
     private int[] cooldowns;
     private List<GameObject> objectPool = new List<GameObject>();
@@ -21,7 +24,7 @@ public class ObjectSpawner : MonoBehaviour
 
     public GameObject[] ObjectPrefabs;
     public GameObject[] WeaponPrefabs;
-   // public GameObject[] spawnedGuns;
+    // public GameObject[] spawnedGuns;
     private GameObject[] spawnedGuns;
 
     public float ShieldProbablity = 0.2f;
@@ -46,17 +49,85 @@ public class ObjectSpawner : MonoBehaviour
     private Gamemanager gameManager;
     public GameObject[] Gem;
     public GameObject[] Sheild;
-
+    public int[] RandomMaps;
     public GameObject selectedBackgroundPrefab;
     // Start is called before the first frame update
     void Start()
     {
         photonView = GetComponent<PhotonView>();
         gameManager = FindObjectOfType<Gamemanager>();
-        
-       
+        GetRandomSequence2(backgroundPrefabs.Length, backgroundPrefabs.Length);
+
+
     }
-    
+
+    public void EnableTestLevel()
+    {
+        Gamemanager.instance.EnableLevel();
+    }
+    public int[] GetRandomSequence2(int total, int n)
+    {
+        //Random total group
+
+        int[] sequence = new int[total];
+
+        //The length of the array of unique numbers obtained
+
+        RandomMaps = new int[n];
+
+        for (int i = 0; i < total; i++)
+        {
+            sequence[i] = i;
+        }
+
+        int end = total - 1;
+
+        for (int i = 0; i < n; i++)
+        {
+
+            //A random number, every random time, random interval -1
+
+            int num = UnityEngine.Random.Range(0, end + 1);
+
+            RandomMaps[i] = sequence[num];
+
+            //Assign the last number of the interval to the fetched number
+
+            sequence[num] = sequence[end];
+
+            end--;
+
+            //Perform the effect once: 1, 2, 3, 4, 5 to 2
+
+            //Then the next random interval becomes 1,5,3,4;
+
+        }
+        return RandomMaps;
+    }
+
+    public void SpawnBG(int i)
+    {
+        DestroyBackground();
+        InstantiateBackground(i);
+    }
+
+    public void DestroyBackground()
+    {
+        //if (selectedBackgroundPrefab != null)
+        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("SwitchableObject"))
+
+        {
+            PhotonNetwork.Destroy(obj);
+            Debug.Log("Destroyedmaps" + obj);
+        }
+    }
+    private void InstantiateBackground(int index)
+    {
+        PhotonNetwork.Instantiate(backgroundPrefabs[index].name, Vector3.zero, Quaternion.identity);
+    }
+
+
+    #region
     public void SpawnBackground()
     {
         int randomIndex = GetRandomIndex();
@@ -85,20 +156,7 @@ public class ObjectSpawner : MonoBehaviour
 
     }
 
-    public void DestroyBackground()
-    {
-        //if (selectedBackgroundPrefab != null)
-        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("SwitchableObject"))
 
-        {
-            PhotonNetwork.Destroy(obj);
-            Debug.Log("Destroyedmaps" + obj);
-        }
-    }
-    private void InstantiateBackground(int index)
-    {
-        PhotonNetwork.Instantiate(backgroundPrefabs[index].name, Vector3.zero, Quaternion.identity);
-    }
 
     private void InstantiateSpecialBackground(int index)
     {
@@ -115,8 +173,7 @@ public class ObjectSpawner : MonoBehaviour
         return Random.Range(0, backgroundPrefabs.Length);
     }
 
-    
-    
+    #endregion
     private void ShuffleObjectPool()
     {
         int n = objectPool.Count;
@@ -130,6 +187,7 @@ public class ObjectSpawner : MonoBehaviour
             objectPool[n] = value;
         }
     }
+
     private GameObject GetRandomObject()
     {
         if (objectPool.Count == 0)
@@ -144,7 +202,7 @@ public class ObjectSpawner : MonoBehaviour
         if (objectPool.Count == 0)
         {
             // Refill and shuffle the pool when it becomes empty
-            
+
             ShuffleObjectPool();
         }
 
@@ -152,19 +210,19 @@ public class ObjectSpawner : MonoBehaviour
     }
 
 
-    public void SpawnGE()
+    public void SpawnGE(int level)
     {
-        
+
         if (PhotonNetwork.IsConnected)
         {
             if (PhotonNetwork.IsMasterClient)
             {
                 cooldowns = new int[backgroundPrefabs.Length];
 
-                SpawnBackground();
+                // SpawnBackground();
 
                 //SpawnGameObjects();
-
+                SpawnBG(level);
                 SpawnGunsRandomly();
                 ShuffleObjectPool(); // Shuffle the pool initially
                 GatherValidPoints();
@@ -184,7 +242,7 @@ public class ObjectSpawner : MonoBehaviour
                 DestroyGameObjects();
                 DestroyBackground();
                 DestroySpawnedGuns();
-             
+
             }
             else
             {
@@ -229,24 +287,24 @@ public class ObjectSpawner : MonoBehaviour
         MaxWeaponObjects = 6;
         isOSpawning = true;
         isWSpawning = true;
-  
+
         StartCoroutine(SpawnObjectsIfNeeded());
         StartCoroutine(SpawnWeaponObjectsIfNeeded());
 
     }
-    
-    
+
+
 
     public void DestroyGameObjects()
     {
         DestroySpawnObjects();
-        
+
         // photonView.RPC("DestroySpawnObjects", RpcTarget.All);
     }
     // Update is called once per frame
     void Update()
     {
-               
+
 
     }
 
@@ -318,7 +376,7 @@ public class ObjectSpawner : MonoBehaviour
         bool isValidPositionFound = false;
         GameObject selectedObject = GetRandomObject();
 
-        
+
         while (!isValidPositionFound && validSpawnPoints.Count > 0)
         {
             int randomIndex = Random.Range(0, validSpawnPoints.Count);
@@ -356,7 +414,7 @@ public class ObjectSpawner : MonoBehaviour
 
         }
     }
-    
+
 
     private void DestroySpawnObjects()
     {

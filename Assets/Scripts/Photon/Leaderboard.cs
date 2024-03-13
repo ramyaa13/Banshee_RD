@@ -65,7 +65,7 @@ public class Leaderboard : MonoBehaviour
                 if (player.NickName == LocalPlayerName)
                 {
                     stars = stars - i;
-                    Debug.Log("stars earned by: " + LocalPlayerName + stars);
+                    //Debug.Log("stars earned by: " + LocalPlayerName + stars);
                 }
             }
             

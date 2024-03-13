@@ -78,7 +78,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
     {
         //PhotonNetwork.OfflineMode = true;
         instance = this;
-        StartScreen.gameObject.SetActive(true);
+        //StartScreen.gameObject.SetActive(true);
         HealthText.text = "100";
         KillCountText.text = "0";
     }
@@ -224,7 +224,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
 
         if (Data.instance.isPlayerMasterClient == true)
         {
-            randomObjectSpawn.SpawnGE();
+            randomObjectSpawn.SpawnGE(LevelCount-1);
             
             Debug.Log("It's a master client");
         }
@@ -265,7 +265,6 @@ public class Gamemanager : MonoBehaviourPunCallbacks
 
                 SpawnGameEssentials();
                 SpawnPlayer();
-
                 InvokeRepeating(nameof(IsPlayerDeadCounts), 5f, 5f);
 
                 GS = false;
