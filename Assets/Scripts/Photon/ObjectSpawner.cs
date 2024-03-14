@@ -523,7 +523,7 @@ public class ObjectSpawner : MonoBehaviour
 
     void SpawnGunsRandomly()
     {
-        testInt++;
+       // testInt++;
         GameObject[] Points = GameObject.FindGameObjectsWithTag("SpawnPoints");
 
         if (Points.Length == 0 || WeaponPrefabs.Length == 0)
@@ -557,7 +557,7 @@ public class ObjectSpawner : MonoBehaviour
                 usedSpawnPoints.Add(randomPoint); // Mark this spawn point as used
             }
 
-            Debug.LogError(gunsSpawned + " total gun spawned " + testInt);
+            //Debug.LogError(gunsSpawned + " total gun spawned " + testInt);
         }
     }
 
