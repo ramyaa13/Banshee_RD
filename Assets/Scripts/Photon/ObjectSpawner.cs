@@ -534,9 +534,16 @@ public class ObjectSpawner : MonoBehaviour
 
         int gunsSpawned = 0;
         spawnedGuns = new GameObject[MaxWeaponObjects];
+        List<GameObject> usedSpawnPoints = new List<GameObject>(); // Track used spawn points
+
         while (gunsSpawned < MaxWeaponObjects)
         {
             GameObject randomPoint = Points[Random.Range(0, Points.Length)];
+
+            // Check if the spawn point is already used
+            if (usedSpawnPoints.Contains(randomPoint))
+                continue; // Skip this iteration if the spawn point is already used
+
             int randomGunIndex = Random.Range(0, WeaponPrefabs.Length);
             GameObject selectedGunPrefab = WeaponPrefabs[randomGunIndex];
 
@@ -547,11 +554,13 @@ public class ObjectSpawner : MonoBehaviour
                 GameObject spawnedGun = PhotonNetwork.Instantiate(selectedGunPrefab.name, randomPoint.transform.position, Quaternion.identity);
                 spawnedGuns[gunsSpawned] = spawnedGun;
                 gunsSpawned++;
+                usedSpawnPoints.Add(randomPoint); // Mark this spawn point as used
             }
 
-            Debug.LogError(gunsSpawned + "total gun spawned" + testInt);
+            Debug.LogError(gunsSpawned + " total gun spawned " + testInt);
         }
     }
+
 
     void DestroySpawnedGuns()
     {
