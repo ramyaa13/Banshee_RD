@@ -79,8 +79,8 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         //PhotonNetwork.OfflineMode = true;
         instance = this;
         //StartScreen.gameObject.SetActive(true);
-        HealthText.text = "100";
-        KillCountText.text = "0";
+        //HealthText.text = "100";
+        //KillCountText.text = "0";
     }
     // Start is called before the first frame update
     void Start()
@@ -98,7 +98,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
     {
         GS = true;
         maxLevels = 5;
-        LevelCount = 0;
+        LevelCount = 1;
         KillCount = 0;
         Deathcount = 0;
         GemsCount = 0;
@@ -129,7 +129,9 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         {
             LeaveRoom();
         }
-        PingRateText.text = PhotonNetwork.GetPing().ToString();
+
+        string ping = PhotonNetwork.GetPing().ToString();
+        //PingRateText.text = ping;
     }
 
     public void StartRespawn()
@@ -208,12 +210,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         PhotonNetwork.Instantiate(PlayerPrefab.name, new Vector2(PlayerPrefab.transform.position.x + randomSpawn, PlayerPrefab.transform.position.y), Quaternion.identity, 0);
         StartScreen.gameObject.SetActive(false);
         SceneCam.gameObject.SetActive(false);
-        LevelCount = 1;
-        KillCount = 0;
-        Deathcount = 0;
-        GemsCount = 0;
-        isPlayerDead = 0;
-        SetHashes();
+        
         leaderboard.SetPlayerName(LocalPlayer.GetComponent<BansheePlayer>().PlayerName);
         
 
@@ -238,10 +235,9 @@ public class Gamemanager : MonoBehaviourPunCallbacks
     public void DestroyGameEssentials()
     {
 
-        if (Data.instance.isPlayerMasterClient == true)
+        if (Data.instance.isPlayerMasterClient == true && GS == false)
         {
             randomObjectSpawn.DestroyGE();
-            randomObjectSpawn.DestroyBackground();
             Debug.Log("It's a master client");
         }
         else
@@ -254,7 +250,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
     {
         LevelTimeAmount -= Time.deltaTime;
         LevelTimer.text = "Level Starts in : " + LevelTimeAmount.ToString("F0");
-
+        
         if (LevelTimeAmount <= 0)
         {
 
@@ -263,7 +259,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
             {
                 LevelTimer.text = "Level Started!!!";
 
-                SpawnGameEssentials();
+               
                 SpawnPlayer();
                 InvokeRepeating(nameof(IsPlayerDeadCounts), 5f, 5f);
 
@@ -271,7 +267,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
             }
             else
             {
-                SpawnGameEssentials();
+               
                 EnableRespawn();
                 InvokeRepeating(nameof(IsPlayerDeadCounts), 5f, 5f);
 
@@ -292,6 +288,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         {
             CancelInvoke("IsPlayerDeadCounts");
             DestroyGameEssentials();
+            SpawnGameEssentials();
             LevelUI.SetActive(true);
             LevelTimeAmount = 5f; //10f
             b_Level = true;

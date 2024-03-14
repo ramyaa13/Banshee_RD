@@ -51,6 +51,8 @@ public class ObjectSpawner : MonoBehaviour
     public GameObject[] Sheild;
     public int[] RandomMaps;
     public GameObject selectedBackgroundPrefab;
+
+    private int testInt;
     // Start is called before the first frame update
     void Start()
     {
@@ -107,7 +109,7 @@ public class ObjectSpawner : MonoBehaviour
 
     public void SpawnBG(int i)
     {
-        DestroyBackground();
+        //DestroyBackground();
         InstantiateBackground(i);
     }
 
@@ -521,6 +523,7 @@ public class ObjectSpawner : MonoBehaviour
 
     void SpawnGunsRandomly()
     {
+        testInt++;
         GameObject[] Points = GameObject.FindGameObjectsWithTag("SpawnPoints");
 
         if (Points.Length == 0 || WeaponPrefabs.Length == 0)
@@ -545,6 +548,8 @@ public class ObjectSpawner : MonoBehaviour
                 spawnedGuns[gunsSpawned] = spawnedGun;
                 gunsSpawned++;
             }
+
+            Debug.LogError(gunsSpawned + "total gun spawned" + testInt);
         }
     }
 
