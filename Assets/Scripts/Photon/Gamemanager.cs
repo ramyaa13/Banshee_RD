@@ -79,8 +79,8 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         //PhotonNetwork.OfflineMode = true;
         instance = this;
         //StartScreen.gameObject.SetActive(true);
-        //HealthText.text = "100";
-        //KillCountText.text = "0";
+        HealthText.text = "100";
+        KillCountText.text = "0";
     }
     // Start is called before the first frame update
     void Start()
@@ -98,7 +98,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
     {
         GS = true;
         maxLevels = 5;
-        LevelCount = 1;
+        LevelCount = 0;
         KillCount = 0;
         Deathcount = 0;
         GemsCount = 0;
@@ -131,13 +131,13 @@ public class Gamemanager : MonoBehaviourPunCallbacks
         }
 
         string ping = PhotonNetwork.GetPing().ToString();
-        //PingRateText.text = ping;
+        PingRateText.text = ping;
     }
 
     public void StartRespawn()
     {
         TimeAmount -= Time.deltaTime;
-        //spawnTimer.text = "Respawn in : " + TimeAmount.ToString("F0");
+        spawnTimer.text = "Respawn in : " + TimeAmount.ToString("F0");
 
         if (TimeAmount <= 0)
         {
@@ -221,7 +221,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
 
         if (Data.instance.isPlayerMasterClient == true)
         {
-            randomObjectSpawn.SpawnGE(LevelCount-1);
+            randomObjectSpawn.SpawnGE(LevelCount);
             
             Debug.Log("It's a master client");
         }

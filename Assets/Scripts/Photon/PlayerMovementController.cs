@@ -395,13 +395,10 @@ public class PlayerMovementController : MonoBehaviour
     {
         jump = value;
     }
-
     public void SetEnableDisableInputs(bool value)
     {
         DisableInputs = value;
     }
-
-
     /// <summary>
     /// Sets the player's `jumpHeld` value.
     /// </summary>
@@ -410,7 +407,6 @@ public class PlayerMovementController : MonoBehaviour
     {
         jumpHeld = value;
     }
-
     /// <summary>
     /// Gets the player's current direction.
     /// </summary>
@@ -419,7 +415,6 @@ public class PlayerMovementController : MonoBehaviour
     {
         return direction;
     }
-
     /// <summary>
     /// Plays the death animation.
     /// </summary>

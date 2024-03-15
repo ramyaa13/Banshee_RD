@@ -15049,7 +15049,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7434e541aa76c744acf346912376d1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isPlayerMasterClient: 1
+  isPlayerMasterClient: 0
   maxplayers: 0
   HairIndex: 0
   EyesIndex: 0
