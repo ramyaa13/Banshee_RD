@@ -170,7 +170,7 @@ public class Bullet : MonoBehaviourPun
 
     public void BulletFire()
     {
-        if (gunController != null && gunController.isGunEquipped == true)
+        if (gunController != null && gunController.IsGunEquiped() == true)
         {
            Vector2 direction = gunController.GetGunDirection(transform);
 

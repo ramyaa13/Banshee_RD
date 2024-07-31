@@ -4,6 +4,7 @@ using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 using TMPro;
+using UnityEngine.UI;
 
 public class QuickStartLobbyController : MonoBehaviourPunCallbacks
 {
@@ -12,6 +13,8 @@ public class QuickStartLobbyController : MonoBehaviourPunCallbacks
 
     //[SerializeField]
     //private GameObject quickCancelButton;
+
+    #region Public Variables
 
     [SerializeField]
     public int roomMaxPlayer =  4;
@@ -29,6 +32,8 @@ public class QuickStartLobbyController : MonoBehaviourPunCallbacks
 
     [SerializeField]
     private GameObject UserNamePanel;
+    [SerializeField]
+    private Button PlayButton;
 
     [SerializeField]
     private GameObject LoginButtonObj;
@@ -56,10 +61,116 @@ public class QuickStartLobbyController : MonoBehaviourPunCallbacks
     [SerializeField]
     private GameObject MenuPanel;
 
+    [SerializeField] TMP_Text crystalText;
+    [SerializeField] TMP_Text coinText;
+    [SerializeField] TMP_Text starText;
+
+    #endregion Public Variables
+
+    private int stars;
+    public int Stars { get { return stars; }
+        set {
+            stars = value;
+            starText.text = stars.ToString();
+                 
+        } }
+
+    private int crystal;
+    public int Crystal
+    {
+        get { return crystal; }
+        set
+        {
+            crystal = value;
+            crystalText.text = crystal.ToString();
+        }
+    }
+
+    private int coins;
+    public int Coins
+    {
+        get { return coins; }
+        set
+        {
+            coins = value;
+            coinText.text = coins.ToString();
+        }
+    }
+
+
+
+
+    public bool IsTesting;
+
+
     private CharacterCustomisation CC;
     private void Awake()
     {
-        PhotonNetwork.ConnectUsingSettings();
+        if(PhotonNetwork.IsConnected)
+        {
+            if (!Globals.LoadFromGamePlay)
+            {
+                PhotonNetwork.ConnectUsingSettings();
+
+                print("Is connection ready  " + PhotonNetwork.IsConnectedAndReady);
+                print("IN lobby " + PhotonNetwork.IsConnectedAndReady);
+            
+            }
+        }
+        else
+            PhotonNetwork.ConnectUsingSettings();
+
+        Coins = DataManager.GetCoins();
+        Crystal = DataManager.GetCrystals();
+        Stars = DataManager.GetStars();
+    }
+
+
+    private void Update()
+    {
+        if (IsTesting)
+        {
+            if (UserNamePanel.activeSelf && Input.GetKeyDown(KeyCode.L))
+            {
+                if (UserNameInput.text.Length < 2)
+                {
+                    UserNameInput.text = "FF";
+                }
+                Login();
+            }
+
+            if (MenuPanel.activeSelf && Input.GetKeyDown(KeyCode.G))
+            {
+                GameModeButton();
+            }
+
+            if (GameModePanel.activeSelf)
+            {
+                if (Input.GetKeyDown(KeyCode.Alpha2))
+                    SetRoomMaxPlayer(2);
+                else if (Input.GetKeyDown(KeyCode.Alpha3))
+                    SetRoomMaxPlayer(3);
+            }
+            if (RoomPanel.activeSelf)
+            {
+                if (Input.GetKeyDown(KeyCode.C))
+                {
+                    if (CreateRoomInput.text.Length < 2)
+                    {
+                        CreateRoomInput.text = "rr";
+                    }
+                    CreateRoom();
+                }
+                else if (Input.GetKeyDown(KeyCode.J))
+                {
+                    if (JoinRoomInput.text.Length < 2)
+                    {
+                        JoinRoomInput.text = "rr";
+                    }
+                    JoinRoom();
+                }
+            }
+        }
     }
 
     public override void OnConnectedToMaster()
@@ -73,8 +184,23 @@ public class QuickStartLobbyController : MonoBehaviourPunCallbacks
     public override void OnJoinedLobby()
     {
         Debug.Log("Connected To Lobby");
-        UserNamePanel.SetActive(true);
-        CC = GetComponent<CharacterCustomisation>();
+        //PlayButton.interactable = true;
+
+        if (Globals.LoadFromGamePlay)
+        {
+            MenuPanel.SetActive(true);
+            Globals.LoadFromGamePlay = false;
+        }
+        else
+        {
+            UserNamePanel.SetActive(true);
+            CC = GetComponent<CharacterCustomisation>();
+        }
+    }
+
+    public void OnPlay()
+    {
+        //if(PhotonNetwork.InLobby)
     }
 
     //Join Random Room
@@ -114,8 +240,11 @@ public class QuickStartLobbyController : MonoBehaviourPunCallbacks
     public void SetRoomMaxPlayer(int x)
     {
         roomMaxPlayer = x;
+        Globals.RoomMaxPlayers = roomMaxPlayer;
+        GameModePanel.SetActive(false);
         RoomPanel.SetActive(true);
     }
+
     public void LoginCheck()
     {
         if (UserNameInput.text.Length >= 2)
@@ -138,6 +267,7 @@ public class QuickStartLobbyController : MonoBehaviourPunCallbacks
         Debug.Log(UserNameInput.text);
         ErrorText.text = "Login Success";
     }
+
     public void GameModeButton()
     {
         MenuPanel.SetActive(false);
@@ -154,7 +284,7 @@ public class QuickStartLobbyController : MonoBehaviourPunCallbacks
     {
         CharacterCustomPanel.SetActive(false);
         CharacterCustomAvatar.SetActive(false);
-        Data.instance.CharacterCustomise(CC.HairIndex, CC.EyesIndex, CC.TopsIndex, CC.IsKnickersOn, CC.IsShortsOn, CC.IsMaskOn);
+        Data.instance.CharacterCustomise(CC.HairIndex, CC.EyesIndex, CC.TopsIndex, CC.ShoesIndex, CC.IsKnickersOn, CC.IsShortsOn, false);
         MenuPanel.SetActive(true);
     }
 
@@ -195,6 +325,7 @@ public class QuickStartLobbyController : MonoBehaviourPunCallbacks
     {
         RoomOptions RO = new RoomOptions();
         RO.MaxPlayers = roomMaxPlayer;
+        print("room max plr on join room : " + RO.MaxPlayers);
         PhotonNetwork.JoinOrCreateRoom(JoinRoomInput.text, RO, TypedLobby.Default);
     }
 

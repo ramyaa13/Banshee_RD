@@ -8,17 +8,32 @@ public class Sword : MonoBehaviour
 {
     public float Damage;
     //public bool Attack;
-    private PhotonView photonView;
-    public string KillerName;
-    public GameObject LocalPlayerObj;
+    //private PhotonView photonView;
+    //public string KillerName;
+    //public GameObject LocalPlayerObj;
+    public BoxCollider2D capsuleCollider2D;
 
     private void Start()
     {
-        photonView = GetComponent<PhotonView>();
-        if (photonView.IsMine)
-        {
-            KillerName = LocalPlayerObj.GetComponent<BansheePlayer>().PlayerName;
-        }
+        //photonView = GetComponent<PhotonView>();
+        //if (photonView.IsMine)
+        //{
+        //    KillerName = LocalPlayerObj.GetComponent<BansheePlayer>().PlayerName;
+        //}
+
+        EnableTrigger(false);
+    }
+
+    public void EnableTrigger(bool state)
+    {
+        capsuleCollider2D.enabled = state;
+        if (state)
+            Invoke("DisableIt", 0.8f);
+    }
+
+    private void DisableIt()
+    {
+        capsuleCollider2D.enabled = false;
     }
     public void UpdateDamage(float damage)
     {
@@ -39,8 +54,8 @@ public class Sword : MonoBehaviour
                 {
                     Gamemanager.instance.UpdateKillCount();
                     Player GotKilled = target.Owner;
-                    target.GetComponent<HealthController>().photonView.RPC("YouGotKilledBy", GotKilled, KillerName);
-                    target.GetComponent<HealthController>().photonView.RPC("YouKilled", LocalPlayerObj.GetComponent<PhotonView>().Owner, target.Owner.NickName);
+                    target.GetComponent<HealthController>().photonView.RPC("YouGotKilledBy", GotKilled, "KillerName");
+                    target.GetComponent<HealthController>().photonView.RPC("YouKilled", Gamemanager.instance.LocalPlayer.GetComponent<PhotonView>().Owner, target.Owner.NickName);
                 }
 
             }

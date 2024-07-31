@@ -75,7 +75,7 @@ public class LobbyWaitRoom : MonoBehaviourPunCallbacks
         }
         else
         {
-            MinPlayerToStart = 4;
+            MinPlayerToStart = 2;
             Data.instance.SetRoomMaxPlayers(MinPlayerToStart);
             for (int i = 0; i < MinPlayerToStart; i++)
             {

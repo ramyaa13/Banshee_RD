@@ -12,7 +12,7 @@ public class HealthController : MonoBehaviour
     public float playerHeath;
 
     public Rigidbody2D rb;
-    public GameObject deadsprite;
+    //public GameObject deadsprite;
     public GameObject MainCharacter;
     public CapsuleCollider2D collider;
     public GameObject playerCanvas;
@@ -24,8 +24,11 @@ public class HealthController : MonoBehaviour
 
     public PhotonView photonView;
 
+    private float defaultGravityScale;
+
     void Start()
     {
+        defaultGravityScale = rb.gravityScale;
         photonView = GetComponent<PhotonView>();
         PlayerMovementController = GetComponent<PlayerMovementController>();
 
@@ -65,7 +68,7 @@ public class HealthController : MonoBehaviour
         rb.gravityScale = 0;
         rb.isKinematic = true;
         collider.enabled = false;
-        rb.simulated = false;
+        rb.simulated = false; 
         playerCanvas.SetActive(false);
 
         PlayerMovementController.PlayDeathAnimation();
@@ -73,7 +76,7 @@ public class HealthController : MonoBehaviour
 
         rb.constraints = RigidbodyConstraints2D.FreezePositionX;
        
-        photonView.RPC("DelayedDeathActions", RpcTarget.All, PhotonNetwork.Time + 1.5f);
+        //photonView.RPC("DelayedDeathActions", RpcTarget.All, PhotonNetwork.Time + 1.5f);
     }
     //Custom added scripts 
     [PunRPC]
@@ -95,12 +98,18 @@ public class HealthController : MonoBehaviour
     private void CompleteDeath()
     {
         // Your additional death actions after waiting for 3 seconds
-        deadsprite.gameObject.SetActive(true);
-        MainCharacter.gameObject.SetActive(false);
+        //deadsprite.gameObject.SetActive(true);
+        //MainCharacter.gameObject.SetActive(false);
         //this.GetComponent<PhotonView>().RPC("Revive", RpcTarget.AllBuffered);
 
-
     }
+
+    public void RevivePlayer()
+    {
+        this.GetComponent<PhotonView>().RPC("Revive", RpcTarget.AllBuffered);
+    }
+     
+
     //waiting scripts
 
     [PunRPC]
@@ -108,7 +117,7 @@ public class HealthController : MonoBehaviour
     {
         health = 1;
         fillImage.fillAmount = 1f;
-        rb.gravityScale = 1;
+        rb.gravityScale = defaultGravityScale;
         rb.isKinematic = false;
         rb.simulated = true;
 
@@ -123,7 +132,6 @@ public class HealthController : MonoBehaviour
 
         collider.enabled = true;
 
-        deadsprite.gameObject.SetActive(false);
         playerCanvas.SetActive(true);
     }
 

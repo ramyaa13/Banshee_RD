@@ -13,6 +13,8 @@ public class ObjectSpawner : MonoBehaviour
     //public Tilemap tilemap;
 
     public GameObject[] backgroundPrefabs;
+    public PolygonCollider2D[] confiners;
+
     private int[] cooldowns;
     private List<GameObject> objectPool = new List<GameObject>();
 
@@ -53,6 +55,9 @@ public class ObjectSpawner : MonoBehaviour
     public GameObject selectedBackgroundPrefab;
 
     private int testInt;
+
+
+  
     // Start is called before the first frame update
     void Start()
     {
@@ -109,7 +114,8 @@ public class ObjectSpawner : MonoBehaviour
 
     public void SpawnBG(int i)
     {
-        //DestroyBackground();
+        DestroyBackground();
+        i = 1;
         InstantiateBackground(i);
     }
 
@@ -125,7 +131,19 @@ public class ObjectSpawner : MonoBehaviour
     }
     private void InstantiateBackground(int index)
     {
-        PhotonNetwork.Instantiate(backgroundPrefabs[index].name, Vector3.zero, Quaternion.identity);
+        var BG = (GameObject) PhotonNetwork.Instantiate(backgroundPrefabs[index].name, Vector3.zero, Quaternion.identity);
+        BG.transform.localScale = Vector3.one * 0.2f;
+
+        //Gamemanager.instance.UpdatePlayerSpawnPoints(BG.GetComponent<MapScript>().PlayerSpawnPoints);
+
+        //foreach (var item in confiners)
+        //{
+        //    item.gameObject.SetActive(false);
+        //}
+
+        //confiners[index].gameObject.SetActive(true);
+        //Gamemanager.instance.SetCinemachineConfiner(confiners[index]);
+     
     }
 
 
@@ -141,6 +159,8 @@ public class ObjectSpawner : MonoBehaviour
         }
 
         DestroyBackground();
+
+        randomIndex = 0;
 
         // Instantiate the randomly selected background
         InstantiateBackground(randomIndex);
@@ -223,7 +243,7 @@ public class ObjectSpawner : MonoBehaviour
 
                 // SpawnBackground();
 
-                //SpawnGameObjects();
+                SpawnGameObjects();
                 SpawnBG(level);
                 SpawnGunsRandomly();
                 ShuffleObjectPool(); // Shuffle the pool initially
@@ -291,7 +311,7 @@ public class ObjectSpawner : MonoBehaviour
         isWSpawning = true;
 
         StartCoroutine(SpawnObjectsIfNeeded());
-        StartCoroutine(SpawnWeaponObjectsIfNeeded());
+        //StartCoroutine(SpawnWeaponObjectsIfNeeded());
 
     }
 
@@ -358,7 +378,6 @@ public class ObjectSpawner : MonoBehaviour
         }
         else
         {
-
             return ObjectType.Gem;
         }
     }
@@ -552,6 +571,7 @@ public class ObjectSpawner : MonoBehaviour
             {
                 // Instantiate the selected gun prefab at the position of the spawn point
                 GameObject spawnedGun = PhotonNetwork.Instantiate(selectedGunPrefab.name, randomPoint.transform.position, Quaternion.identity);
+                spawnedGun.transform.localScale = Vector3.one * 0.2f;
                 spawnedGuns[gunsSpawned] = spawnedGun;
                 gunsSpawned++;
                 usedSpawnPoints.Add(randomPoint); // Mark this spawn point as used

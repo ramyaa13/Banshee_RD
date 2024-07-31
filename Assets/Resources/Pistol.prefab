@@ -12,9 +12,10 @@ GameObject:
   - component: {fileID: 3222832061880422101}
   - component: {fileID: 5223182487146625010}
   - component: {fileID: -7956245826400287271}
+  - component: {fileID: 2431627434129529791}
   m_Layer: 0
   m_Name: Pistol
-  m_TagString: Pistol
+  m_TagString: Weapon
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -29,8 +30,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 16.392145, y: -12.317076, z: -0.01}
-  m_LocalScale: {x: 1.1437068, y: 1.1437068, z: 0.5718534}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.2, y: 0.2, z: 0.1}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -75,7 +76,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 60
-  m_Sprite: {fileID: 21300000, guid: 60bfe842cffd36e44a68391cc2595c97, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 7c3a281ac71e24784998ffeb274189ee, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -118,9 +119,9 @@ CircleCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.022014761, y: -0.058629315}
+  m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 2.1256108
+  m_Radius: 2.125
 --- !u!114 &-7956245826400287271
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -143,3 +144,16 @@ MonoBehaviour:
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!114 &2431627434129529791
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4108988202488995371}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1a60b7c077bd49b18bdfe6135cc3b47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weaponType: 0

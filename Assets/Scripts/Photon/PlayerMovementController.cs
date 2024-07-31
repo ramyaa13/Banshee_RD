@@ -2,14 +2,15 @@ using Photon.Pun;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Animations;
+using Photon.Realtime;
 /// <summary>
 /// A component that handles all player movement.
 /// </summary>
-public class PlayerMovementController : MonoBehaviour
+public class PlayerMovementController : MonoBehaviour, IPunObservable
 {
 
     [Header("Movement")]
-    public float MovementSpeed = 100.0f;
+    //public float MovementSpeed = 100.0f;
     public float GroundedBufferTime = 0.15f;
     public float walkSpeed = 10f;
     public float runSpeed = 25f;
@@ -19,8 +20,8 @@ public class PlayerMovementController : MonoBehaviour
     public float JumpBufferTime = 0.5f;
     public float JumpForce = 400.0f;
     private bool IsJumping = false;
-    public float GravityScale = 100.0f;
-    public float FallGravityMultiplier = 3.0f;
+    //public float GravityScale = 100.0f;
+    //public float FallGravityMultiplier = 3.0f;
     // public ParticleSystem LandingParticles;
 
     [Header("Ground Collision")]
@@ -32,66 +33,57 @@ public class PlayerMovementController : MonoBehaviour
     public float KnockbackForce = 2000f;
     public float KnockbackTime = 0.25f;
 
-    private Rigidbody2D r;
+    private Rigidbody2D rb;
     public Animator PlayerAnimator;
 
-    public RuntimeAnimatorController IdleAnimatorController;
-    public RuntimeAnimatorController GunHoldAnimatorController;
-    public RuntimeAnimatorController katanaHoldAnimatorController;
+    //public RuntimeAnimatorController IdleAnimatorController;
+    //public RuntimeAnimatorController GunHoldAnimatorController;
+    //public RuntimeAnimatorController katanaHoldAnimatorController;
 
     private float horizontalMovement;
     private int direction = 1;
     private bool jump;
     private bool jumpHeld;
     private bool isGrounded;
-    private float jumpTimer;
-    private float groundedTimer;
+    //private float jumpTimer;
+    //private float groundedTimer;
     private float knockbackTimer = 0f;
-    private bool falling;
+    //private bool falling;
     private PhotonView photonView;
 
     public float ResetTimeAmount = 1f;
-    private BansheePlayer BP;
     private bool DisableInputs;
-    private bool isRunning;
+    //private bool isRunning;
     //private bool isDead;
     private bool Idle;
     private float horizontalInput;
+
+    private Vector3 smoothMovement;
+    private readonly string P_Player = "Player";
+
 
     // private ParticleSystem.EmissionModule footstepEmission;
 
     /// <summary>
     /// Called by Unity when this GameObject starts.
     /// </summary>
+    ///
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        photonView = GetComponent<PhotonView>();
+    }
+
+
     private void Start()
     {
-        r = GetComponent<Rigidbody2D>();
-        photonView = GetComponent<PhotonView>();
-        BP = GetComponent<BansheePlayer>();
-        PlayerAnimator.runtimeAnimatorController = IdleAnimatorController;
+       
+        //PlayerAnimator.runtimeAnimatorController = IdleAnimatorController;
         // footstepEmission = FootstepParticles.emission;
 
     }
-    public void SetAnimator()
-    {
-        //SetAnimator
-        if (BP.isIdle == true && BP.isGunEquipped == false && BP.isSwordEquipped == false)
-        {
-            PlayerAnimator.runtimeAnimatorController = IdleAnimatorController;
-        }
-        else if (BP.isIdle == false && BP.isGunEquipped == true && BP.isSwordEquipped == false)
-        {
-            PlayerAnimator.runtimeAnimatorController = GunHoldAnimatorController;
-        }
-        else if (BP.isIdle == false && BP.isGunEquipped == false && BP.isSwordEquipped == true)
-        {
-            PlayerAnimator.runtimeAnimatorController = katanaHoldAnimatorController;
-        }
-        else
-        {
-            PlayerAnimator.runtimeAnimatorController = IdleAnimatorController;
-        }
-    }
+
+ 
     /// <summary>
     /// Called by Unity every frame.
     /// </summary>
@@ -102,90 +94,62 @@ public class PlayerMovementController : MonoBehaviour
         {
             PlayerAnimator.SetFloat("Speed", 0f);
             PlayerAnimator.SetBool("IsRunning", false);
-            PlayerAnimator.SetBool("IsWalking", false);
+            //PlayerAnimator.SetBool("IsWalking", false);
             PlayerAnimator.SetBool("IsJumping", false);
             PlayerAnimator.SetBool("Shoot", false);
             runSpeed = 0f;
-            isRunning = false;
+            //isRunning = false;
             
             horizontalInput = 0f;
         }
 
-        if (photonView.IsMine && DisableInputs == false)
+        if (DisableInputs == false)
         {
-
-            runSpeed = 40f;
-            PlayerAnimator.SetBool("Dead",false);
-            //bool isRunning = Mathf.Abs(horizontalMovement) > 0.1f;
-            //PlayerAnimator.SetBool("isMoving", isRunning);
-            //PlayerAnimator.SetFloat("Horizontal", Mathf.Abs(horizontalMovement));
-
-            // Player movement
-            horizontalInput = Input.GetAxis("Horizontal");
-            //bool isRunning = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-            isRunning = true;
-            // Adjust speed based on running
-            //float currentSpeed = isRunning ? runSpeed : walkSpeed; // 0 OR 1
-            float currentSpeed = runSpeed;
-            Vector2 moveDirection = new Vector2(horizontalInput, 0f);
-            r.velocity = new Vector2(moveDirection.x * currentSpeed, r.velocity.y);
-
-            // Set walking or running animation parameter
-            PlayerAnimator.SetFloat("Speed", Mathf.Abs(moveDirection.x));
-            //Debug.Log(moveDirection.x * currentSpeed + "MD");
-            //
-            // Set the correct animation based on the speed
-            if (isRunning)
+            if (photonView.IsMine)
             {
+                //runSpeed = 40f;
+                //PlayerAnimator.SetBool("Dead", false);
+
+
+                //bool isRunning = Mathf.Abs(horizontalMovement) > 0.1f;
+                //PlayerAnimator.SetBool("isMoving", isRunning);
+                //PlayerAnimator.SetFloat("Horizontal", Mathf.Abs(horizontalMovement));
+
+                //isGrounded = Physics2D.OverlapCircle(GroundCheck.position, 0.02f, groundLayer);
+                isGrounded = Physics2D.OverlapCircle(FeetPosition.transform.position, 0.05f, GroundLayer);
+                //if(Gamemanager.instance != null)
+                //    Gamemanager.instance.ShowMessage(isGrounded ? "Grounded" : "In Air");
+
+                // Player movement
+                horizontalInput = Input.GetAxis("Horizontal");
+                //bool isRunning = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+                //isRunning = true;
+                // Adjust speed based on running
+                float currentSpeed = walkSpeed; // 0 OR 1
+                //float currentSpeed = 10; // runSpeed;  // Check FM
+
+                Vector2 moveDirection = new Vector2(horizontalInput, 0f);
+                rb.velocity = new Vector2(moveDirection.x * currentSpeed, rb.velocity.y); // Check FM
+
+             
+                PlayerAnimator.SetFloat("Speed", Mathf.Abs(moveDirection.x));
+               
                 PlayerAnimator.SetBool("IsRunning", true);
-                PlayerAnimator.SetBool("IsWalking", false);
-                //Shoot();
-            }
-            else
-            {
-                PlayerAnimator.SetBool("IsWalking", false);
-                PlayerAnimator.SetBool("IsRunning", false);
-                //Shoot();
-            }
+                //PlayerAnimator.SetBool("IsWalking", false);
+                Shoot();
+             
+                //idle
+                if (horizontalInput == 0)
+                    PlayerAnimator.SetBool("IsRunning", false);
 
-            //idle
-            if (horizontalInput == 0)
-            {
-                PlayerAnimator.SetBool("IsWalking", false);
-                PlayerAnimator.SetBool("IsRunning", false);
-                //PlayerAnimator.SetBool("Dead",false);
-            }
-
-            if (IsJumping)
-            {
-                PlayerAnimator.SetBool("IsJumping", IsJumping);
-                PlayerAnimator.SetBool("IsWalking", false);
-                PlayerAnimator.SetBool("IsRunning", false);
-            }
-            else
-            {
-                PlayerAnimator.SetBool("IsJumping", IsJumping);
-            }
-
-            if (jump && isGrounded == true)
-            {
-                jumpTimer = Time.time + JumpBufferTime;
-
-            }
-
-            
-            // footstepEmission.rateOverTime = 0f;
-
-            if (horizontalMovement != 0)
-            {
-                direction = horizontalMovement < 0 ? -1 : 1;
-
-                if (isGrounded)
-                {
-                    // footstepEmission.rateOverTime = 20f;
-                }
+                CheckIfGrounded();
             }
         }
+    }
+
+    public void ChangeAnimation(int animationID)
+    {
+        PlayerAnimator.SetFloat(P_Player, animationID);
     }
 
     public void Shoot()
@@ -194,113 +158,30 @@ public class PlayerMovementController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F))
         {
             // Set the shooting animation trigger
-            PlayerAnimator.SetBool("Shoot", true);
+            //PlayerAnimator.SetBool("Shoot1", true);
+            PlayerAnimator.SetTrigger("Shoot1");
 
         }
-
         else if (Input.GetKeyUp(KeyCode.F))
         {
             // Reset shooting animation trigger (if needed)
 
-            PlayerAnimator.SetBool("Shoot", false);
-
-        }
-    }
-    /// <summary>
-    /// Called by Unity at a fixed tick rate based on the physics settings.
-    /// </summary>
-    private void FixedUpdate()
-    {
-        if (photonView.IsMine)
-        {
-            CheckIfFalling();
-            CheckIfGrounded();
-            // HandleMovement();
-            HandleJumping();
-            //ModifyPhysics();
-        }
-    }
-
-
-    public void PlayerHitsbyBullet(int direction)
-    {
-        // Add a knockback force to this player based on the direction the projectile was travelling.
-        r.velocity = new Vector2(0, r.velocity.y);
-        r.AddForce(new Vector2(direction * KnockbackForce, 0), ForceMode2D.Impulse);
-        knockbackTimer = Time.time + KnockbackTime;
-
-        // Play the blood particle effect.
-        // BloodParticles.Play();
-
-        // Trigger the hit animation.
-        //PlayerAnimator.SetTrigger("Hit");
-    }
-
-    /// <summary>
-    /// Checks to see if the player is falling and sets the falling variable.
-    /// </summary>
-    private void CheckIfFalling()
-    {
-        // Cache the current state of the falling variable.
-        var wasFalling = falling == true;
-
-        // Set the new falling state based on whether the player's y velocity is below 0.
-        falling = r.velocity.y < 0;
-
-        // If the player is not falling, trigger the Land animation event.
-        // We don't check if they were already falling here due to a bug with the animation controller that sometimes locks the player in a falling animation
-        // if they hold left/right when landing on a platform.
-        if (!falling)
-        {
-            // PlayerAnimator.SetTrigger("Land");
-
+            //PlayerAnimator.SetBool("Shoot1", false);
         }
 
-        // If the player wasn't falling but is now falling, trigger the Fall animation event.
-        if (!wasFalling && falling)
-        {
-            // PlayerAnimator.SetTrigger("Fall");
+        if(Input.GetMouseButtonDown(0))
+            PlayerAnimator.SetTrigger("Shoot1");
+        //PlayerAnimator.SetBool("Shoot1", true);
+        else if (Input.GetMouseButtonUp(0))
+            PlayerAnimator.SetBool("Shoot1", false);
 
-        }
     }
 
-    /// <summary>
-    /// Checks to see if a player is on the ground and sets the isGrounded variable.
-    /// </summary>
     private void CheckIfGrounded()
     {
-
-        // Check if the player was grounded.
-        var wasGrounded = isGrounded == true;
-
-        // Perform a physics circle overlap from the FeetPosition to check if there is a collision with the ground.
-        var collider = Physics2D.OverlapCircle(FeetPosition.transform.position, 0.5f, GroundLayer);
-
-        // Set the isGrounded value.
-        isGrounded = collider != null;
-        // Debug.Log(isGrounded + " :isgrounded");
-
-        // If the player is grounded, set the groundedTimer to the maximum grounded buffer time - this controls Hang Time.
-        // If the player is not grounded, start reducing the groundedTimer.
-        if (isGrounded)
-        {
-            groundedTimer = GroundedBufferTime;
-        }
-        else
-        {
-            groundedTimer -= Time.deltaTime;
-        }
-
-        // If the player wasn't grounded but now is, play the landing particle effect.
-        if (!wasGrounded && isGrounded)
-        {
-            // LandingParticles.Play();
-        }
+        Jump();
     }
 
-    /// <summary>
-    /// Sets the player's x velocity based on horizontal input.
-    /// </summary>
     private void HandleMovement()
     {
         // If the time has not surpassed the existing knockback timer, don't allow the player to move horizontally yet.
@@ -308,124 +189,223 @@ public class PlayerMovementController : MonoBehaviour
         {
             return;
         }
-
-        // Set the player's new velocity based on their horizontal input and their existing y velocity.
-        // r.velocity = new Vector2(horizontalMovement * MovementSpeed, r.velocity.y);
     }
 
-    /// <summary>
-    /// Sets the player's y velocity based on whether the player has initated a jump.
-    /// </summary>
-    private void HandleJumping()
+    private void Jump()
     {
-        // If the `jumpTimer` is greater than the current time and the groundedTimer is greater than 0 then the player has requested to jump and they're still allowed to
-        // so activate the jump.
-        if (jumpTimer > Time.time && groundedTimer > 0)
+        if (Input.GetButtonDown("Jump") && isGrounded)
         {
-            // Set the player's new velocity based on their existing x velocity and the JumpForce.
-            r.velocity = new Vector2(r.velocity.x, JumpForce);
-
-            ResetTimeAmount -= Time.deltaTime;
-
-            if (ResetTimeAmount <= 0)
-            {
-                // Reset the jumpTimer and groundedTimer.
-                jumpTimer = 0;
-                groundedTimer = 0;
-                ResetTimeAmount = 0.2f;
-
-            }
-
 
             IsJumping = true;
-            // Play the jump animation.
-            //PlayerAnimator.SetTrigger("Jump");
-
-
+            PlayerAnimator.SetBool("IsJumping", IsJumping);
+            //rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            rb.AddForce(Vector2.up * JumpForce);
+            //isGrounded = false;
         }
         else
         {
+            // Reset jumping animation parameter when not jumping
             IsJumping = false;
-
+            PlayerAnimator.SetBool("IsJumping", IsJumping);
         }
     }
-
-    /// <summary>
-    /// Modifies the player's RigidBody2D `gravityScale` based on their current state.
-    /// </summary>
-    private void ModifyPhysics()
-    {
-        // If the player is grounded, set their gravityScale to 0.
-        if (isGrounded)
-        {
-            r.gravityScale = 0;
-        }
-        else
-        {
-            // Otherwise, reset the gravity scale.
-            r.gravityScale = GravityScale;
-
-            // If the player is falling, apply the fall gravity multiplier.
-            if (r.velocity.y < 0)
-            {
-                r.gravityScale = GravityScale * FallGravityMultiplier;
-            }
-            // If the player is jumping and holding the jump key, apply half the default gravity scale to allow for a higher jump.
-            else if (r.velocity.y > 0 && jumpHeld)
-            {
-                r.gravityScale = GravityScale / 2;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Sets the player's `horizontalMovement` value.
-    /// </summary>
-    /// <param name="value">The new value.</param>
+   
+   
     public void SetHorizontalMovement(float value)
     {
         horizontalMovement = value;
     }
 
-    /// <summary>
-    /// Sets the player's `jump` value.
-    /// </summary>
-    /// <param name="value">The new value.</param>
+  
     public void SetJump(bool value)
     {
-        jump = value;
+        //jump = value;
+        Jump();
+    }
+
+    public void JumpFinised()
+    {
+        IsJumping = false;
     }
     public void SetEnableDisableInputs(bool value)
     {
         DisableInputs = value;
     }
-    /// <summary>
-    /// Sets the player's `jumpHeld` value.
-    /// </summary>
-    /// <param name="value">The new value.</param>
+  
     public void SetJumpHeld(bool value)
     {
         jumpHeld = value;
     }
-    /// <summary>
-    /// Gets the player's current direction.
-    /// </summary>
-    /// <returns>The direction where -1 is left and 1 is right.</returns>
+   
     public int GetDirection()
     {
         return direction;
     }
-    /// <summary>
-    /// Plays the death animation.
-    /// </summary>
+ 
     public void PlayDeathAnimation()
     {
+        //PlayerAnimator.SetTrigger("Died");
+
         PlayerAnimator.SetBool("Dead", true);
+        PlayerAnimator.SetBool("Idle", false);
     }
+
     public void ResetDeathAnimation()
     {
-        PlayerAnimator.SetBool("Dead",false);
-        //PlayerAnimator.SetBool("Idle",true);
-
+        //PlayerAnimator.SetBool("Dead", false);
+        PlayerAnimator.SetBool("Idle",true);
+        PlayerAnimator.SetBool("Dead", false);
+        ChangeAnimation(0);
+        //PlayerAnimator.SetFloat("Player", 0f);
     }
+
+    // Synchronize data across the network
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            // Writing our own velocity to the network
+            stream.SendNext(transform.position);
+            stream.SendNext(rb.velocity);
+        }
+        else if(stream.IsReading)
+        {
+            // Receiving velocity from the network
+            transform.position = (Vector3)stream.ReceiveNext();
+            rb.velocity = (Vector2)stream.ReceiveNext();
+        }
+    }
+
+    #region Extra code
+    /// <summary>
+    /// Called by Unity at a fixed tick rate based on the physics settings.
+    /// </summary>
+    private void FixedUpdate()
+    {
+        if (photonView.IsMine)
+        {
+            //CheckIfFalling();
+            //CheckIfGrounded();
+            // HandleMovement();
+            //HandleJumping();
+            //ModifyPhysics();
+        }
+    }
+
+
+    //public void PlayerHitsbyBullet(int direction)
+    //{
+    //    // Add a knockback force to this player based on the direction the projectile was travelling.
+    //    r.velocity = new Vector2(0, r.velocity.y);
+    //    r.AddForce(new Vector2(direction * KnockbackForce, 0), ForceMode2D.Impulse);
+    //    knockbackTimer = Time.time + KnockbackTime;
+
+    //    // Play the blood particle effect.
+    //    // BloodParticles.Play();
+
+    //    // Trigger the hit animation.
+    //    //PlayerAnimator.SetTrigger("Hit");
+    //}
+
+  
+
+  
+  
+    #endregion
 }
+
+/// <summary>
+/// Checks to see if the player is falling and sets the falling variable.
+/// </summary>
+/* private void CheckIfFalling()
+ {
+     // Cache the current state of the falling variable.
+     var wasFalling = falling == true;
+
+     // Set the new falling state based on whether the player's y velocity is below 0.
+     falling = rb.velocity.y < 0;
+
+     // If the player is not falling, trigger the Land animation event.
+     // We don't check if they were already falling here due to a bug with the animation controller that sometimes locks the player in a falling animation
+     // if they hold left/right when landing on a platform.
+     if (!falling)
+     {
+         // PlayerAnimator.SetTrigger("Land");
+
+     }
+
+     // If the player wasn't falling but is now falling, trigger the Fall animation event.
+     if (!wasFalling && falling)
+     {
+         // PlayerAnimator.SetTrigger("Fall");
+
+     }
+ }*/
+
+
+/// <summary>
+/// Modifies the player's RigidBody2D `gravityScale` based on their current state.
+/// </summary>
+/* private void ModifyPhysics()
+ {
+     // If the player is grounded, set their gravityScale to 0.
+     if (isGrounded)
+     {
+         rb.gravityScale = 0;
+     }
+     else
+     {
+         // Otherwise, reset the gravity scale.
+         rb.gravityScale = GravityScale;
+
+         // If the player is falling, apply the fall gravity multiplier.
+         if (rb.velocity.y < 0)
+         {
+             rb.gravityScale = GravityScale * FallGravityMultiplier;
+         }
+         // If the player is jumping and holding the jump key, apply half the default gravity scale to allow for a higher jump.
+         else if (rb.velocity.y > 0 && jumpHeld)
+         {
+             rb.gravityScale = GravityScale / 2;
+         }
+     }
+ }*/
+
+
+
+/// <summary>
+/// Sets the player's y velocity based on whether the player has initated a jump.
+/// </summary>
+//private void HandleJumping_()
+//{
+// If the `jumpTimer` is greater than the current time and the groundedTimer is greater than 0 then the player has requested to jump and they're still allowed to
+//// so activate the jump.
+//if (jumpTimer > Time.time && groundedTimer > 0)
+//{
+//    // Set the player's new velocity based on their existing x velocity and the JumpForce.
+//    rb.velocity = new Vector2(rb.velocity.x, JumpForce);
+
+//    ResetTimeAmount -= Time.deltaTime;
+
+//    if (ResetTimeAmount <= 0)
+//    {
+//        // Reset the jumpTimer and groundedTimer.
+//        jumpTimer = 0;
+//        groundedTimer = 0;
+//        ResetTimeAmount = 0.2f;
+
+//    }
+
+
+//    IsJumping = true;
+//    // Play the jump animation.
+//    //PlayerAnimator.SetTrigger("Jump");
+
+
+//}
+//else
+//{
+//    IsJumping = false;
+
+//}
+//}

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
+
 public class BulletFire : MonoBehaviour
 {
     public bool MovingDirection = false;
@@ -14,6 +15,7 @@ public class BulletFire : MonoBehaviour
     private int direction;
 
     public string KillerName;
+    public Vector2 leftScale;
 
     [HideInInspector]
     public GameObject LocalPlayerObj;
@@ -35,7 +37,7 @@ public class BulletFire : MonoBehaviour
         {
             LocalPlayerObj = null;
         }
-        MoveSpeed = 100f;
+        //MoveSpeed = 100f;
         StartCoroutine(DestroyBullet());
     }
 
@@ -58,6 +60,7 @@ public class BulletFire : MonoBehaviour
     {
         return direction;
     }
+
     IEnumerator DestroyBullet()
     {
         yield return new WaitForSeconds(DestroyTime);
@@ -71,19 +74,24 @@ public class BulletFire : MonoBehaviour
     }
 
     [PunRPC]
+    void ChangeBulletFacing()
+    {
+        this.transform.localScale = leftScale;
+    }
+
+    [PunRPC]
     void DestroyB()
     {
+        if (photonView.IsMine)
+        {
+            Gamemanager.instance.PlayBlastEffect(transform.position);
+            StopCoroutine("DestroyBullet");
+        }
         Destroy(this.gameObject);
     }
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-
-        //if (!photonView.IsMine)
-        //{
-        //    return;
-        //}
-
         PhotonView target = collision.gameObject.GetComponent<PhotonView>();
 
         if (target != null && (!target.IsMine) && LocalPlayerObj !=  null)
@@ -102,8 +110,19 @@ public class BulletFire : MonoBehaviour
                     target.GetComponent<HealthController>().photonView.RPC("YouKilled", LocalPlayerObj.GetComponent<PhotonView>().Owner, target.Owner.NickName);
                 }
             }
+            else if(target.tag == "Ground")
+            {
+                Debug.Log("Destroy bullet");
+            }
+
             this.GetComponent<PhotonView>().RPC("DestroyB", RpcTarget.AllBuffered);
 
+        }
+
+        if (collision.tag == "Ground")
+        {
+            Debug.Log("Destroy bullet");
+            this.GetComponent<PhotonView>().RPC("DestroyB", RpcTarget.AllBuffered);
         }
     }
 }

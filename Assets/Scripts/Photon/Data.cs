@@ -12,9 +12,15 @@ public class Data : MonoBehaviour
     public int HairIndex;
     public int EyesIndex;
     public int TopsIndex;
+    public int ShoesIndex;
     public bool IsKnickersOn;
     public bool IsShortsOn;
     public bool IsMaskOn;
+    public int spawnIndex;
+    public Vector3 spawnPosition;
+    public List<Vector3> playerSpawnPositions;
+
+
     private void Awake()
     {
         instance = this;
@@ -37,11 +43,12 @@ public class Data : MonoBehaviour
         maxplayers = mp;
     }
 
-    public void CharacterCustomise(int H, int E, int T, bool K, bool S, bool M)
+    public void CharacterCustomise(int H, int E, int T, int si, bool K, bool S, bool M)
     {
         HairIndex = H;
         EyesIndex = E;
         TopsIndex = T;
+        ShoesIndex = si;
         IsKnickersOn = K;
         IsShortsOn = S;
         IsMaskOn = M;

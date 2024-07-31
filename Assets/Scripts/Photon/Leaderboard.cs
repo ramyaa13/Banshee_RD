@@ -5,6 +5,7 @@ using System.Linq;
 using Photon.Pun;
 using TMPro;
 using Photon.Pun.UtilityScripts;
+using Photon.Realtime;
 
 public class Leaderboard : MonoBehaviour
 {
@@ -71,6 +72,32 @@ public class Leaderboard : MonoBehaviour
             
 
             i++;
+        }
+        if(Globals.RoomMaxPlayers == 2)
+        {
+            if(sortedPlayerList.Count == 2)
+            {
+                if (LocalPlayerName != null)
+                {
+                    var player = sortedPlayerList[0];
+                    if (player.NickName == LocalPlayerName)
+                        stars = 8;
+
+                    var player1 = sortedPlayerList[1];
+                    if (player1.NickName == LocalPlayerName)
+                        stars = 2;
+
+                    //foreach (var slot in slots)
+                    //{
+                    //    slot.SetActive(false);
+                    //}
+                    //for (int j = 0; j < stars; j++)
+                    //{
+                    //    slots[i].SetActive(true);
+                    //}
+
+                }
+            }
         }
     }
 

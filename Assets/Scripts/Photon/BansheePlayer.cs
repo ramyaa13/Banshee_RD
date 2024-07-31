@@ -11,14 +11,15 @@ using UnityEngine.U2D.Animation;
 using System.Linq;
 using UnityEngine.UI;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class BansheePlayer : MonoBehaviourPun
 {
-    public GameObject PlayerCam;
+    //public GameObject PlayerCam;
     public GameObject PlayerCanvas;
     //public GameObject Character;
 
-    private bool isfacingRight = false;
+    private bool isfacingRight = false; 
    
     [HideInInspector] public float HorizontalInput;
     [HideInInspector] public bool Jump;
@@ -46,7 +47,7 @@ public class BansheePlayer : MonoBehaviourPun
     public bool isIdle = true;
     public bool isSwordEquipped =  false;
     public bool isdead = false;
-    
+    public float scaleFactor = 1.2f;
     //CHARACTER CUSTOM
     [SerializeField]
     private SpriteLibrary spriteLibrary = default;
@@ -56,27 +57,56 @@ public class BansheePlayer : MonoBehaviourPun
     public SpriteResolver ArmLeftResolver = default;
     public SpriteResolver ArmRightResolver = default;
     public SpriteResolver TopResolver = default;
+    public SpriteResolver ArmForeLeftResolver = default;
+    public SpriteResolver ArmForeRightResolver = default;
+    public SpriteResolver LeftCalfResolver = default;
+    public SpriteResolver LeftThighResolver = default;
+    public SpriteResolver RightCalfResolver = default;
+    public SpriteResolver RightThighResolver = default;
+    public SpriteResolver ShoesLResolver = default;
+    public SpriteResolver ShoesRResolver = default;
 
     public string Hair;
     public string Eyes;
     public string Top;
     public string ArmL;
     public string ArmR;
+    public string ArmFL;
+    public string ArmFR;
+    public string CalfL;
+    public string CalfR;
+    public string ThighL;
+    public string ThighR;
+    public string Waist;
+    public string ShoesL;
+    public string ShoesR;
 
     public GameObject HairObj;
     public GameObject Mask;
     public GameObject Knicker;
     public GameObject[] Shorts;
-    public PhotonView photonView;
+    public PhotonView pView;
+    public GameObject GroundCheck;
+    public LayerMask groundLayer;
+    public Sword sword;
+    [SerializeField] private GameObject shild;
+
     private SpriteLibraryAsset LibraryAsset => spriteLibrary.spriteLibraryAsset;
+
+    //private bool IsGrounded;
     private void Awake()
     {
-        photonView = GetComponent<PhotonView>();
+        PhotonNetwork.SendRate = 20;
+        PhotonNetwork.SerializationRate = 15;
+
+        pView = GetComponent<PhotonView>();
         if (photonView.IsMine)
         {
-            Gamemanager.instance.LocalPlayer = this.gameObject;
-           // Gamemanager.instance.SetPlayerState(1);
-            PlayerCam.SetActive(true);
+            Gamemanager.instance.LocalPlayer = this;
+            // Gamemanager.instance.SetPlayerState(1);
+            //PlayerCam.SetActive(true);
+            Gamemanager.instance.CameraTarget(this.gameObject);
+            //IsGrounded = true;
             PlayerNameText.text = PhotonNetwork.NickName;
             PlayerName = PhotonNetwork.NickName;
             playerProfileData.username = PlayerName;
@@ -85,7 +115,7 @@ public class BansheePlayer : MonoBehaviourPun
         }
         else
         {
-            PlayerNameText.text = photonView.Owner.NickName;
+            PlayerNameText.text = pView.Owner.NickName;
             PlayerNameText.color = Color.red;
         }
     }
@@ -106,8 +136,9 @@ public class BansheePlayer : MonoBehaviourPun
     void Update()
     {
         playerMovementController.SetEnableDisableInputs(DisableInputs);
-        if (photonView.IsMine && DisableInputs == false)
+        if (pView.IsMine && DisableInputs == false)
         {
+            //IsGrounded = Physics2D.OverlapCircle(GroundCheck.transform.position, 0.02f, groundLayer);
             PlayerMovementControl();
             GunEquipControl();
             Shoot();
@@ -118,61 +149,95 @@ public class BansheePlayer : MonoBehaviourPun
    
     public void CharacterCustomise()
     {
+        HairObj.SetActive(true);
         string[] hairlabels = LibraryAsset.GetCategoryLabelNames(Hair).ToArray();
-        HairResolver.SetCategoryAndLabel(Hair, hairlabels[(int)photonView.Owner.CustomProperties["HairIndex"]]);
+        HairResolver.SetCategoryAndLabel(Hair, hairlabels[(int)pView.Owner.CustomProperties["HairIndex"]]);
 
         string[] eyelabels = LibraryAsset.GetCategoryLabelNames(Eyes).ToArray();
-        EyesResolver.SetCategoryAndLabel(Eyes, eyelabels[(int)photonView.Owner.CustomProperties["EyeIndex"]]);
+        EyesResolver.SetCategoryAndLabel(Eyes, eyelabels[(int)pView.Owner.CustomProperties["EyeIndex"]]);
 
+        CustomizeTop();
+
+        string[] shoeLeftlabels = LibraryAsset.GetCategoryLabelNames(ShoesL).ToArray();
+        ShoesLResolver.SetCategoryAndLabel(ShoesL, shoeLeftlabels[(int)pView.Owner.CustomProperties["ShoesIndex"]]);
+        string[] shoeRightlabels = LibraryAsset.GetCategoryLabelNames(ShoesR).ToArray();
+        ShoesRResolver.SetCategoryAndLabel(ShoesR, shoeRightlabels[(int)pView.Owner.CustomProperties["ShoesIndex"]]);
+
+
+
+
+
+        //if ((bool)pView.Owner.CustomProperties["IsKnickersOn"] == true)
+        //{
+        //    Mask.gameObject.SetActive(true);
+        //    HairObj.SetActive(false);
+        //}
+        //else
+        //{
+        //    Mask.gameObject.SetActive(false);
+        //    HairObj.SetActive(true);
+        //}
+
+        //if ((bool)pView.Owner.CustomProperties["IsShortsOn"] == true)
+        //{
+        //    foreach (GameObject item in Shorts)
+        //    {
+        //        item.SetActive(true);
+        //    }
+        //}
+        //else
+        //{
+        //    foreach (GameObject item in Shorts)
+        //    {
+        //        item.SetActive(false);
+        //    }
+        //}
+
+        //if ((bool)pView.Owner.CustomProperties["IsMaskOn"] == true)
+        //{
+        //    Knicker.gameObject.SetActive(true);
+        //}
+        //else
+        //{
+        //    Knicker.gameObject.SetActive(false);
+        //}
+    }
+
+    private void CustomizeTop()
+    {
         string[] Toplabels = LibraryAsset.GetCategoryLabelNames(Top).ToArray();
         string[] RAlabels = LibraryAsset.GetCategoryLabelNames(ArmR).ToArray();
         string[] LAlabels = LibraryAsset.GetCategoryLabelNames(ArmL).ToArray();
-        TopResolver.SetCategoryAndLabel(Top, Toplabels[(int)photonView.Owner.CustomProperties["TopIndex"]]);
-        ArmLeftResolver.SetCategoryAndLabel(ArmL, RAlabels[(int)photonView.Owner.CustomProperties["TopIndex"]]);
-        ArmRightResolver.SetCategoryAndLabel(ArmR, LAlabels[(int)photonView.Owner.CustomProperties["TopIndex"]]);
+        string[] RFAlabels = LibraryAsset.GetCategoryLabelNames(ArmFR).ToArray();
+        string[] LFAlabels = LibraryAsset.GetCategoryLabelNames(ArmFL).ToArray();
+        string[] LClabels = LibraryAsset.GetCategoryLabelNames(CalfL).ToArray();
+        string[] LTlabels = LibraryAsset.GetCategoryLabelNames(ThighL).ToArray();
+        string[] RClabels = LibraryAsset.GetCategoryLabelNames(CalfR).ToArray();
+        string[] RTlabels = LibraryAsset.GetCategoryLabelNames(ThighR).ToArray();
 
-        if ((bool)photonView.Owner.CustomProperties["IsKnickersOn"] == true)
-        {
-            Mask.gameObject.SetActive(true);
-            HairObj.SetActive(false);
-        }
-        else
-        {
-            Mask.gameObject.SetActive(false);
-            HairObj.SetActive(true);
-        }
+       
 
-        if ((bool)photonView.Owner.CustomProperties["IsShortsOn"] == true)
-        {
-            foreach (GameObject item in Shorts)
-            {
-                item.SetActive(true);
-            }
-        }
-        else
-        {
-            foreach (GameObject item in Shorts)
-            {
-                item.SetActive(false);
-            }
-        }
+        string strTopIndex = "TopIndex";
+        TopResolver.SetCategoryAndLabel(Top, Toplabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
+        ArmLeftResolver.SetCategoryAndLabel(ArmL, LAlabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
+        ArmRightResolver.SetCategoryAndLabel(ArmR, RAlabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
 
-        if ((bool)photonView.Owner.CustomProperties["IsMaskOn"] == true)
-        {
-            Knicker.gameObject.SetActive(true);
-        }
-        else
-        {
-            Knicker.gameObject.SetActive(false);
-        }
+        ArmForeLeftResolver.SetCategoryAndLabel(ArmFL, LFAlabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
+        ArmForeRightResolver.SetCategoryAndLabel(ArmFR, RFAlabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
+
+        LeftCalfResolver.SetCategoryAndLabel(CalfL, LClabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
+        LeftThighResolver.SetCategoryAndLabel(ThighL, LTlabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
+        RightCalfResolver.SetCategoryAndLabel(CalfR, RClabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
+        RightThighResolver.SetCategoryAndLabel(ThighR, RTlabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
+
     }
 
-
-    public void SetPlayerAnimator()
+    public void ActivateShild(bool state)
     {
-        playerMovementController.SetAnimator();
+        shild.SetActive(state);
     }
 
+   
     //Player Movement
     private void PlayerMovementControl()
     {
@@ -181,6 +246,8 @@ public class BansheePlayer : MonoBehaviourPun
         var horizontalInput = Input.GetAxisRaw("Horizontal");
         var attack = Input.GetButtonDown("Fire1");
 
+
+
         // Set a boolean (true/false) value to indicate if any input state has changed since the last frame.
         InputChanged = (horizontalInput != HorizontalInput || attack != Attack);
 
@@ -188,48 +255,54 @@ public class BansheePlayer : MonoBehaviourPun
         HorizontalInput = horizontalInput;
         Attack = attack;
 
-        if(Input.GetKeyDown(KeyCode.Space))
-        {
-            Jump = true;
-            JumpHeld = true;
-        }
-        if (Input.GetKeyUp(KeyCode.Space))
-        {
-            Jump = false;
-            JumpHeld = false;
-        }
+        //if(Input.GetKeyDown(KeyCode.Space) && IsGrounded)
+        //{
+        //    //Jump = true;
+        //    //JumpHeld = true;
+        //    //playerMovementController.SetJump(Jump);
+        //}
+        //else
+        //{
+
+        //}
+        //if (Input.GetKeyUp(KeyCode.Space))
+        //{
+        //    Jump = false;
+        //    JumpHeld = false;
+        //}
        
             // Set inputs on Player Controllers.
         playerMovementController.SetHorizontalMovement(HorizontalInput);
-        playerMovementController.SetJump(Jump);
         playerMovementController.SetJumpHeld(JumpHeld);
         
-        photonView.RPC("Flip", RpcTarget.AllBuffered);
-        
+        //photonView.RPC("Flip", RpcTarget.AllBuffered);
+
+        if(Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
+        {
+            anim.transform.localScale = new Vector3(-scaleFactor, scaleFactor, scaleFactor);
+            isfacingRight = true;
+            pView.RPC(nameof(OnDirectionChanged_Right), RpcTarget.Others);
+        }
+        else if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
+        {
+            anim.transform.localScale = Vector3.one * scaleFactor;
+            isfacingRight = false;
+            pView.RPC(nameof(OnDirectionChanged_Left), RpcTarget.Others);
+        }
     }
 
     [PunRPC]
-    private void Flip()
+    void OnDirectionChanged_Right()
     {
-        if (isfacingRight && HorizontalInput < 0f || !isfacingRight && HorizontalInput > 0f)
-        {
-            isfacingRight = !isfacingRight;
-            Vector3 localScale = transform.localScale;
-            localScale.x *= -1f;
-            transform.localScale = localScale;
-
-            Vector3 CanvasLocalScale = PlayerCanvas.transform.localScale;
-            CanvasLocalScale.x = 2f;
-            PlayerCanvas.transform.localScale = CanvasLocalScale;
-
-            if(transform.localScale.x < 0f)
-            {
-                CanvasLocalScale.x *= -1f;
-                PlayerCanvas.transform.localScale = CanvasLocalScale;
-            }
-        }
+        anim.transform.localScale = new Vector3(-scaleFactor, scaleFactor, scaleFactor);
     }
-    
+
+    [PunRPC]
+    void OnDirectionChanged_Left()
+    {
+        anim.transform.localScale = Vector3.one * scaleFactor;
+    }
+
 
     //Gun Equip
     private void GunEquipControl()
@@ -237,18 +310,45 @@ public class BansheePlayer : MonoBehaviourPun
         if (Input.GetKeyDown(KeyCode.E) )
         {
             gunEquipController.EquipWeapon();
+            playerMovementController.ChangeAnimation(gunEquipController.animationID);
         }
     }
 
     //Shoot
     private void Shoot()
     {
-        playerMovementController.Shoot();
-        if (Input.GetKeyDown(KeyCode.F))
+        if(Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.F))
         {
+            playerMovementController.Shoot();
+            if (gunEquipController.IsGunEquiped() == false && gunEquipController.IsSwordEquiped() == true)
+                sword.EnableTrigger(true);
+
             gunEquipController.Shoot(isfacingRight);
         }
     }
+
+    //void OnCollisionEnter2D(Collision2D collision)
+    //{
+    //    if (photonView.IsMine)
+    //    {
+    //        if (collision.gameObject.CompareTag("Ground"))
+    //        {
+    //            IsGrounded = true;
+    //            playerMovementController.JumpFinised();
+    //        }
+    //    }
+    //}
+
+    //void OnCollisionExit2D(Collision2D collision)
+    //{
+    //    if (photonView.IsMine)
+    //    {
+    //        if (collision.gameObject.CompareTag("Ground"))
+    //        {
+    //            IsGrounded = false;
+    //        }
+    //    }
+    //}
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -270,13 +370,13 @@ public class BansheePlayer : MonoBehaviourPun
             }
         }
 
-        //if(collision.gameObject.tag == "Shield")
-        //{
-        //    coin = collision.gameObject;
-        //    PhotonView photonView = PhotonView.Get(this);
-        //    healthController.photonView.RPC("ShieldHealth", RpcTarget.AllBuffered);
-        //    photonView.RPC("RPC_GemCollected", RpcTarget.MasterClient);
-        //}
+        if (collision.gameObject.tag == "Shield")
+        {
+            //coin = collision.gameObject;
+            PhotonView photonView = PhotonView.Get(this);
+            healthController.photonView.RPC("ShieldHealth", RpcTarget.AllBuffered);
+            photonView.RPC("RPC_GemCollected", RpcTarget.MasterClient);
+        }
     }
 
     public void GemCollected(GameObject Gem)
@@ -299,11 +399,35 @@ public class BansheePlayer : MonoBehaviourPun
 
     public void ScoreUpdate()
     {
-        if (photonView.IsMine)
+        if (pView.IsMine)
         {
             Gamemanager.instance.UpdateScore();
         }
     }
 
-
 }
+
+
+/*
+[PunRPC]
+private void Flip()
+{
+    if (isfacingRight && HorizontalInput < 0f || !isfacingRight && HorizontalInput > 0f)
+    {
+        isfacingRight = !isfacingRight;
+        Vector3 localScale = transform.localScale;
+        localScale.x *= -1f;
+        transform.localScale = localScale;
+
+        Vector3 CanvasLocalScale = PlayerCanvas.transform.localScale;
+        CanvasLocalScale.x = 2f;
+        PlayerCanvas.transform.localScale = CanvasLocalScale;
+
+        if (transform.localScale.x < 0f)
+        {
+            CanvasLocalScale.x *= -1f;
+            PlayerCanvas.transform.localScale = CanvasLocalScale;
+        }
+    }
+}
+*/
