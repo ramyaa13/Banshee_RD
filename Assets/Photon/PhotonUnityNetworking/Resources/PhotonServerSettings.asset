@@ -19,7 +19,7 @@ MonoBehaviour:
     AppIdVoice: 
     AppVersion: 
     UseNameServer: 1
-    FixedRegion: 
+    FixedRegion: in
     Server: 
     Port: 0
     ProxyServer: 
@@ -87,6 +87,11 @@ MonoBehaviour:
   - CharacterCustomise
   - RPC_ForceMasterSpawnWeapon
   - DelayedDeathActions
+  - ONDirectionChanged_Right
+  - OnDirectionChanged_Left
+  - OnDirectionChanged_Right
+  - EnableGunMuzzleFlash
+  - ChangeBulletFacing
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

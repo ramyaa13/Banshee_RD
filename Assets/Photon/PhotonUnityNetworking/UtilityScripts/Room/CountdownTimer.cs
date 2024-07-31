@@ -81,6 +81,7 @@ namespace Photon.Pun.UtilityScripts
 
         public void Update()
         {
+            return;
             if (!this.isTimerRunning) return;
 
             float countdown = TimeRemaining();
@@ -163,14 +164,22 @@ namespace Photon.Pun.UtilityScripts
             int startTime = 0;
             bool wasSet = TryGetStartTime(out startTime);
 
-            Hashtable props = new Hashtable
-            {
-                {CountdownTimer.CountdownStartTime, (int)PhotonNetwork.ServerTimestamp}
-            };
+            //Hashtable props = new Hashtable
+            //{
+            //    {CountdownTimer.CountdownStartTime, (int)PhotonNetwork.ServerTimestamp}
+            //};
+            /*
+
+            Hashtable props = PhotonNetwork.CurrentRoom.CustomProperties;
+            props.Add(CountdownTimer.CountdownStartTime, (int)PhotonNetwork.ServerTimestamp);
+
             PhotonNetwork.CurrentRoom.SetCustomProperties(props);
+            */
+            //string json = JsonUtility.ToJson(new Vector2ListWrapper { vector2List = plrPosition });
+        
 
 
-            Debug.Log("Set Custom Props for Time: "+ props.ToStringFull() + " wasSet: "+wasSet);
+            //Debug.Log("Set Custom Props for Time: "+ props.ToStringFull() + " wasSet: "+wasSet);
         }
     }
 }

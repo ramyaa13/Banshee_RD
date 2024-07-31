@@ -34,7 +34,7 @@ namespace Photon.Pun.UtilityScripts
                 }
             }
             if (!observed)
-            {
+            { 
                 Debug.LogWarning(this + " is not observed by this object's photonView! OnPhotonSerializeView() in this class won't be used.");
             }
         }
