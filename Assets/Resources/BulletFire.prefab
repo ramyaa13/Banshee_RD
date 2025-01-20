@@ -167,9 +167,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MovingDirection: 0
-  MoveSpeed: 35
+  MoveSpeed:
+    fakeValue: 30
   DestroyTime: 2
-  BulleteDamage: 0
+  BulleteDamage:
+    fakeValue: 0
   KillerName: 
   leftScale: {x: -0.35, y: 0.15}
   LocalPlayerObj: {fileID: 0}

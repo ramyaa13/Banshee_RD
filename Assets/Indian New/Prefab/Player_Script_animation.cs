@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using Photon.Pun;
 using Unity.VisualScripting;
 using UnityEngine;
+using GUPS.AntiCheat.Protected;
 
 public class Player_Script_animation : MonoBehaviour
 {
-    public float walkSpeed = 10f;
-    public float runSpeed = 25f;
-    public float jumpForce = 10f;
-    public float bulletForce = 5f;
+    public ProtectedFloat walkSpeed = 10f;//8
+    public ProtectedFloat runSpeed = 25f;//10
+    public ProtectedFloat jumpForce = 10f;//1600
+    public ProtectedFloat bulletForce = 5f;//5
 
     private Rigidbody2D rb;
     private bool isGrounded;
@@ -59,7 +60,7 @@ public class Player_Script_animation : MonoBehaviour
         bool isRunning = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 
         // Adjust speed based on running
-        float currentSpeed = isRunning ? runSpeed : walkSpeed;
+        ProtectedFloat currentSpeed = isRunning ? runSpeed : walkSpeed;
         Vector2 moveDirection = new Vector2(horizontalInput, 0f);
         rb.velocity = new Vector2(moveDirection.x * currentSpeed, rb.velocity.y);
 
