@@ -3,10 +3,12 @@ using Photon.Realtime;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using GUPS.AntiCheat.Protected;
+
 
 public class SwordLocal : MonoBehaviour
 {
-    public float Damage;
+    public ProtectedFloat Damage;
     //public bool Attack;
     public string KillerName;
     public GameObject LocalPlayerObj;

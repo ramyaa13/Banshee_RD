@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Photon.Pun;
-
 public class DisconnectManager : MonoBehaviourPunCallbacks
 {
     public GameObject DisUi;
@@ -13,6 +12,7 @@ public class DisconnectManager : MonoBehaviourPunCallbacks
     public GameObject ReconnectButton;
     public TextMeshProUGUI StatusText;
     public bool isPlayerMasterClient;
+
     private void Awake()
     {
         DontDestroyOnLoad(this.gameObject);

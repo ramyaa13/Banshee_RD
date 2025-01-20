@@ -5,4 +5,5 @@ using UnityEngine;
 public class Weapon : MonoBehaviour
 {
     public WeaponType weaponType;
+    public int priority;
 }

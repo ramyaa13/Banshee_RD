@@ -12,6 +12,9 @@ using System.Linq;
 using UnityEngine.UI;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 using static UnityEngine.RuleTile.TilingRuleOutput;
+using GUPS.AntiCheat.Protected;
+using System.Security.Principal;
+
 
 public class BansheePlayer : MonoBehaviourPun
 {
@@ -43,31 +46,36 @@ public class BansheePlayer : MonoBehaviourPun
     public string PlayerName;
     public GameObject PlayerObj;
 
-    public bool isGunEquipped =  false;
-    public bool isIdle = true;
-    public bool isSwordEquipped =  false;
-    public bool isdead = false;
+    public ProtectedBool isGunEquipped =  false;
+    public ProtectedBool isIdle = true;
+    public ProtectedBool isSwordEquipped =  false;
+    public ProtectedBool isdead = false;
     public float scaleFactor = 1.2f;
     //CHARACTER CUSTOM
     [SerializeField]
     private SpriteLibrary spriteLibrary = default;
 
-    public SpriteResolver HairResolver = default;
+    public SpriteResolver HairResolver = default;  
+    public SpriteResolver GlassesResolver = default;  
     public SpriteResolver EyesResolver = default;
     public SpriteResolver ArmLeftResolver = default;
     public SpriteResolver ArmRightResolver = default;
     public SpriteResolver TopResolver = default;
     public SpriteResolver ArmForeLeftResolver = default;
     public SpriteResolver ArmForeRightResolver = default;
-    public SpriteResolver LeftCalfResolver = default;
-    public SpriteResolver LeftThighResolver = default;
-    public SpriteResolver RightCalfResolver = default;
-    public SpriteResolver RightThighResolver = default;
+    // public SpriteResolver LeftCalfResolver = default;
+    // public SpriteResolver LeftThighResolver = default;
+    // public SpriteResolver RightCalfResolver = default;
+    // public SpriteResolver RightThighResolver = default;
     public SpriteResolver ShoesLResolver = default;
     public SpriteResolver ShoesRResolver = default;
+     public SpriteResolver ShoesLCalfResolver = default;
+    public SpriteResolver ShoesRCalfResolver = default;
 
     public string Hair;
     public string Eyes;
+    public string Glasses;
+
     public string Top;
     public string ArmL;
     public string ArmR;
@@ -80,17 +88,29 @@ public class BansheePlayer : MonoBehaviourPun
     public string Waist;
     public string ShoesL;
     public string ShoesR;
+    public string ShoesLCalf;
+    public string ShoesRCalf;
 
     public GameObject HairObj;
     public GameObject Mask;
+
+    public GameObject glasses;
+    public GameObject crown;
+    public GameObject holo;
     public GameObject Knicker;
     public GameObject[] Shorts;
+    public GameObject LeftFootCalf;
+    public GameObject RightFootCalf;
     public PhotonView pView;
     public GameObject GroundCheck;
     public LayerMask groundLayer;
     public Sword sword;
     [SerializeField] private GameObject shild;
-
+    public HeadConfigData headConfigData;
+    public ProtectedBool isBoostActive;
+    public GameObject speedBostPS;
+    private ProtectedBool pickedOnce;
+    public ProtectedBool isSheildActive;
     private SpriteLibraryAsset LibraryAsset => spriteLibrary.spriteLibraryAsset;
 
     //private bool IsGrounded;
@@ -120,8 +140,6 @@ public class BansheePlayer : MonoBehaviourPun
         }
     }
 
-
-
     private void Start()
     {
         gunEquipController = GetComponent<WeaponController>();
@@ -129,8 +147,6 @@ public class BansheePlayer : MonoBehaviourPun
         healthController = GetComponent<HealthController>();
         CharacterCustomise();
     }
-
-   
 
     // Update is called once per frame
     void Update()
@@ -146,61 +162,82 @@ public class BansheePlayer : MonoBehaviourPun
         }
     }
 
-   
     public void CharacterCustomise()
     {
-        HairObj.SetActive(true);
-        string[] hairlabels = LibraryAsset.GetCategoryLabelNames(Hair).ToArray();
-        HairResolver.SetCategoryAndLabel(Hair, hairlabels[(int)pView.Owner.CustomProperties["HairIndex"]]);
+        // HairObj.SetActive(true);
+        // string[] hairlabels = LibraryAsset.GetCategoryLabelNames(Hair).ToArray();
+        // HairResolver.SetCategoryAndLabel(Hair, hairlabels[(int)pView.Owner.CustomProperties["HairIndex"]]);
 
-        string[] eyelabels = LibraryAsset.GetCategoryLabelNames(Eyes).ToArray();
-        EyesResolver.SetCategoryAndLabel(Eyes, eyelabels[(int)pView.Owner.CustomProperties["EyeIndex"]]);
+        // string[] eyelabels = LibraryAsset.GetCategoryLabelNames(Eyes).ToArray();
+        // EyesResolver.SetCategoryAndLabel(Eyes, eyelabels[(int)pView.Owner.CustomProperties["EyeIndex"]]);
 
         CustomizeTop();
 
-        string[] shoeLeftlabels = LibraryAsset.GetCategoryLabelNames(ShoesL).ToArray();
-        ShoesLResolver.SetCategoryAndLabel(ShoesL, shoeLeftlabels[(int)pView.Owner.CustomProperties["ShoesIndex"]]);
-        string[] shoeRightlabels = LibraryAsset.GetCategoryLabelNames(ShoesR).ToArray();
-        ShoesRResolver.SetCategoryAndLabel(ShoesR, shoeRightlabels[(int)pView.Owner.CustomProperties["ShoesIndex"]]);
+        // string[] shoeLeftlabels = LibraryAsset.GetCategoryLabelNames(ShoesL).ToArray();
+        // ShoesLResolver.SetCategoryAndLabel(ShoesL, shoeLeftlabels[(int)pView.Owner.CustomProperties["ShoesIndex"]]);
+        // string[] shoeRightlabels = LibraryAsset.GetCategoryLabelNames(ShoesR).ToArray();
+        // ShoesRResolver.SetCategoryAndLabel(ShoesR, shoeRightlabels[(int)pView.Owner.CustomProperties["ShoesIndex"]]);
 
+        SetShoesCalf((int)pView.Owner.CustomProperties["ShoesIndex"]);
 
+        CustomizeHead();
+        CustomiseGlasses();
+    }
 
+    private void CustomizeHead()
+    {
+        var headIndex = (int)pView.Owner.CustomProperties["HeadIndex"];
+        var headConfig = headConfigData.HeadConfigs[headIndex];
+        CustomizeEyes(headConfig.eyeIndex);
 
+        if(headConfig.IsMask)
+        {
+            Mask.gameObject.SetActive(true);
+            HairObj.SetActive(false);
+        }
+        else{
+            Mask.gameObject.SetActive(false);
+            HairObj.SetActive(true);
+            CustomiseHair(headConfig.hairIndex);
+        }
+        holo.SetActive(headConfig.IsHolo);
+        crown.SetActive(headConfig.IsCrown);
 
-        //if ((bool)pView.Owner.CustomProperties["IsKnickersOn"] == true)
-        //{
-        //    Mask.gameObject.SetActive(true);
-        //    HairObj.SetActive(false);
-        //}
-        //else
-        //{
-        //    Mask.gameObject.SetActive(false);
-        //    HairObj.SetActive(true);
-        //}
+        // if(headConfig.GlassesIndex >= 0)
+        // {
+        //     glasses.SetActive(true);
+        //     CustomiseGlasses(headConfig.GlassesIndex);
+        // }
+        // else
+        //     glasses.SetActive(false);
+    }
 
-        //if ((bool)pView.Owner.CustomProperties["IsShortsOn"] == true)
-        //{
-        //    foreach (GameObject item in Shorts)
-        //    {
-        //        item.SetActive(true);
-        //    }
-        //}
-        //else
-        //{
-        //    foreach (GameObject item in Shorts)
-        //    {
-        //        item.SetActive(false);
-        //    }
-        //}
+     private void CustomizeEyes(int eyeIndex)
+    {
+        string[] labels = LibraryAsset.GetCategoryLabelNames(Eyes).ToArray();
+        string label = labels[eyeIndex]; 
+        EyesResolver.SetCategoryAndLabel(Eyes, label);
+    }
 
-        //if ((bool)pView.Owner.CustomProperties["IsMaskOn"] == true)
-        //{
-        //    Knicker.gameObject.SetActive(true);
-        //}
-        //else
-        //{
-        //    Knicker.gameObject.SetActive(false);
-        //}
+    public void CustomiseHair(int hairIndex)
+    {
+        string[] labels = LibraryAsset.GetCategoryLabelNames(Hair).ToArray();
+        string label = labels[hairIndex]; 
+        HairResolver.SetCategoryAndLabel(Hair, label);
+    }
+    
+    public void CustomiseGlasses()
+    {
+         var glassIndex = (int)pView.Owner.CustomProperties["FaceIndex"];
+        print("Set Face item "+glassIndex);
+        if(glassIndex > 0)
+        {
+            glasses.SetActive(true);
+            string[] labels = LibraryAsset.GetCategoryLabelNames(Glasses).ToArray();
+            string label = labels[glassIndex-1]; 
+            GlassesResolver.SetCategoryAndLabel(Glasses, label);
+        }else
+            glasses.SetActive(false);
     }
 
     private void CustomizeTop()
@@ -210,10 +247,10 @@ public class BansheePlayer : MonoBehaviourPun
         string[] LAlabels = LibraryAsset.GetCategoryLabelNames(ArmL).ToArray();
         string[] RFAlabels = LibraryAsset.GetCategoryLabelNames(ArmFR).ToArray();
         string[] LFAlabels = LibraryAsset.GetCategoryLabelNames(ArmFL).ToArray();
-        string[] LClabels = LibraryAsset.GetCategoryLabelNames(CalfL).ToArray();
-        string[] LTlabels = LibraryAsset.GetCategoryLabelNames(ThighL).ToArray();
-        string[] RClabels = LibraryAsset.GetCategoryLabelNames(CalfR).ToArray();
-        string[] RTlabels = LibraryAsset.GetCategoryLabelNames(ThighR).ToArray();
+        // string[] LClabels = LibraryAsset.GetCategoryLabelNames(CalfL).ToArray();
+        // string[] LTlabels = LibraryAsset.GetCategoryLabelNames(ThighL).ToArray();
+        // string[] RClabels = LibraryAsset.GetCategoryLabelNames(CalfR).ToArray();
+        // string[] RTlabels = LibraryAsset.GetCategoryLabelNames(ThighR).ToArray();
 
        
 
@@ -225,18 +262,50 @@ public class BansheePlayer : MonoBehaviourPun
         ArmForeLeftResolver.SetCategoryAndLabel(ArmFL, LFAlabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
         ArmForeRightResolver.SetCategoryAndLabel(ArmFR, RFAlabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
 
-        LeftCalfResolver.SetCategoryAndLabel(CalfL, LClabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
-        LeftThighResolver.SetCategoryAndLabel(ThighL, LTlabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
-        RightCalfResolver.SetCategoryAndLabel(CalfR, RClabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
-        RightThighResolver.SetCategoryAndLabel(ThighR, RTlabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
+        // LeftCalfResolver.SetCategoryAndLabel(CalfL, LClabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
+        // LeftThighResolver.SetCategoryAndLabel(ThighL, LTlabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
+        // RightCalfResolver.SetCategoryAndLabel(CalfR, RClabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
+        // RightThighResolver.SetCategoryAndLabel(ThighR, RTlabels[(int)pView.Owner.CustomProperties[strTopIndex]]);
+
+    }
+    
+    private void SetShoesCalf(int optionIndex)
+    {
+        LeftFootCalf.SetActive(optionIndex != 0);
+        RightFootCalf.SetActive(optionIndex != 0);
+
+        string[] ShoesL_labels = LibraryAsset.GetCategoryLabelNames(ShoesL).ToArray();
+        string[] ShoesR_labels = LibraryAsset.GetCategoryLabelNames(ShoesR).ToArray();
+
+
+        string L_label = ShoesL_labels[optionIndex]; 
+        ShoesLResolver.SetCategoryAndLabel(ShoesL, L_label);
+        string R_label = ShoesR_labels[optionIndex];
+        ShoesRResolver.SetCategoryAndLabel(ShoesR, R_label);
+
+        if(optionIndex > 0)
+        {
+            string[] ShoesLCalf_labels = LibraryAsset.GetCategoryLabelNames(ShoesLCalf).ToArray();
+            string[] ShoesRCalf_labels = LibraryAsset.GetCategoryLabelNames(ShoesRCalf).ToArray();
+            ShoesLCalfResolver.SetCategoryAndLabel(ShoesLCalf, ShoesLCalf_labels[optionIndex-1]);
+            ShoesRCalfResolver.SetCategoryAndLabel(ShoesRCalf, ShoesRCalf_labels[optionIndex-1]);
+        }
 
     }
 
+    [PunRPC]
     public void ActivateShild(bool state)
     {
         shild.SetActive(state);
+        isSheildActive = state;
     }
 
+    [PunRPC]
+    private void ColliderEnabler()
+    {
+        //print("CAPSULE OF " + this.PlayerNameText.text + "is enabled");
+        this.transform.GetComponent<CapsuleCollider2D>().enabled = true;
+    }
    
     //Player Movement
     private void PlayerMovementControl()
@@ -245,8 +314,6 @@ public class BansheePlayer : MonoBehaviourPun
         // Get the current input states.
         var horizontalInput = Input.GetAxisRaw("Horizontal");
         var attack = Input.GetButtonDown("Fire1");
-
-
 
         // Set a boolean (true/false) value to indicate if any input state has changed since the last frame.
         InputChanged = (horizontalInput != HorizontalInput || attack != Attack);
@@ -350,32 +417,68 @@ public class BansheePlayer : MonoBehaviourPun
     //    }
     //}
 
-    private void OnTriggerEnter2D(Collider2D collision)
+   private void OnTriggerEnter2D(Collider2D collision)
     {
-        if(collision.gameObject.tag == "Coin")
+        print("On trigger enter collision : " + collision.transform.name);
+
+        if(photonView.IsMine)
         {
-            ScoreUpdate();
-            coin = collision.gameObject;
-            PhotonView photonView = PhotonView.Get(this);
-            if (PhotonNetwork.IsMasterClient)
+            if (collision.gameObject.tag == "Coin")
             {
-                GemCollected(coin);
+                ScoreUpdate();
+                coin = collision.gameObject;
+                PhotonView photonView = PhotonView.Get(this);
+
+                if (PhotonNetwork.IsMasterClient)
+                    GemCollected(coin);
+                else
+                {
+                    int viewID = collision.GetComponent<PhotonView>().ViewID;
+                    Debug.Log("ViewID of gem: " + viewID);
+                    photonView.RPC("RPC_GemCollected", RpcTarget.MasterClient, viewID);
+                }
             }
-            else
+
+            if (collision.gameObject.tag == "Shield")
             {
+                PhotonView photonView = PhotonView.Get(this);
                 int viewID = collision.GetComponent<PhotonView>().ViewID;
-                Debug.Log("ViewID of gem: " + viewID);
-                photonView.RPC("RPC_GemCollected", RpcTarget.MasterClient, viewID);
 
+                if (!pickedOnce)
+                {
+                    print("shield gem collect call");
+                    photonView.RPC("RPC_GemCollected", RpcTarget.MasterClient, viewID);
+                }
+                pickedOnce = true;
+
+                photonView.RPC("ActivateShild", RpcTarget.AllBuffered, true);//shieldhealthmethod
             }
-        }
 
-        if (collision.gameObject.tag == "Shield")
-        {
-            //coin = collision.gameObject;
-            PhotonView photonView = PhotonView.Get(this);
-            healthController.photonView.RPC("ShieldHealth", RpcTarget.AllBuffered);
-            photonView.RPC("RPC_GemCollected", RpcTarget.MasterClient);
+            if (collision.gameObject.tag == "Speed")
+            {
+                PhotonView photonView = PhotonView.Get(this);
+                int viewID = collision.GetComponent<PhotonView>().ViewID;
+
+                if (!pickedOnce)
+                {
+                    print("speed gem collect call");
+                    photonView.RPC("RPC_GemCollected", RpcTarget.MasterClient, viewID);
+                }
+                pickedOnce = true;
+
+                StartCoroutine(ActivateSpeedBoost(true));
+            }
+
+            if (collision.gameObject.tag == "DeathZone")
+            {
+                print("player in DeathZone");
+
+                if (isSheildActive)
+                    healthController.photonView.RPC("ActivateShild", RpcTarget.AllBuffered, false);//shieldhealthmethod
+
+                if (isBoostActive)
+                    StartCoroutine(ActivateSpeedBoost(false));
+            }
         }
     }
 
@@ -392,16 +495,40 @@ public class BansheePlayer : MonoBehaviourPun
         if(PhotonView.Find(viewId).gameObject != null)
         {
             PhotonNetwork.Destroy(PhotonView.Find(viewId).gameObject);
+            print("gem destroyed");
         }
         
         //Debug.Log("Coin Destroyed and synced");
     }
+
+    //  [PunRPC]  //Need to check if above onenot working 
+    // public void RPC_GemCollected(int viewId)
+    // {
+    //     Debug.Log("RPC_GemCollected method");
+    //     PhotonNetwork.Destroy(PhotonView.Find(viewId).gameObject);
+    //     Debug.Log("RPC_GemCollected method done");
+    // }
 
     public void ScoreUpdate()
     {
         if (pView.IsMine)
         {
             Gamemanager.instance.UpdateScore();
+        }
+    }
+
+    public IEnumerator ActivateSpeedBoost(bool state)
+    {
+        //boost.SetActive(state);
+        isBoostActive = state;
+
+        yield return new WaitForSeconds(10f);
+        if(isBoostActive)
+        {
+            isBoostActive = false;
+            speedBostPS.SetActive(false);
+            //StartCoroutine(ActivateSpeedBoost(false));
+            print("speed boost is deactivated");
         }
     }
 

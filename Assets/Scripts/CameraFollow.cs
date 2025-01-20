@@ -1,11 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using GUPS.AntiCheat.Protected;
 
 public class CameraFollow : MonoBehaviour
 {
-    public float followSpeed = 2f;
-    public float yOffset = -1f;
+    public ProtectedFloat followSpeed = 2f;
+    public ProtectedFloat yOffset = -1f;
     public Transform target;
 
 

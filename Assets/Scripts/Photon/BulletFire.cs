@@ -3,15 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
+using GUPS.AntiCheat.Protected;
+
 
 public class BulletFire : MonoBehaviour
 {
     public bool MovingDirection = false;
-    public float MoveSpeed = 100f;
-    public float DestroyTime = 2f;
+    [SerializeField] ProtectedFloat MoveSpeed = 30f;//30
+    public float DestroyTime = 2f;//2
     private PhotonView photonView;
 
-    public float BulleteDamage;
+    [SerializeField] ProtectedFloat BulleteDamage;//1
     private int direction;
 
     public string KillerName;
@@ -98,12 +100,14 @@ public class BulletFire : MonoBehaviour
         {
             if (target.tag == "Player")
             {
-                target.GetComponent<HealthController>().photonView.RPC("HealthUpdate", RpcTarget.AllBuffered, BulleteDamage);
+                float bd = BulleteDamage;
+                target.GetComponent<HealthController>().photonView.RPC("HealthUpdate", RpcTarget.AllBuffered, bd/*BulleteDamage*/);
                 float enemyHealth = target.GetComponent<HealthController>().health;
                 Debug.Log(target.Owner + "enemy health name" + enemyHealth);
                 Debug.Log(LocalPlayerObj.GetComponent<PhotonView>().Owner + "my player health name");
                 if (enemyHealth <= 0)
                 {
+                    Gamemanager.instance.enemyDied = false;
                     Gamemanager.instance.UpdateKillCount();
                     Player GotKilled = target.Owner;
                     target.GetComponent<HealthController>().photonView.RPC("YouGotKilledBy", GotKilled, KillerName);

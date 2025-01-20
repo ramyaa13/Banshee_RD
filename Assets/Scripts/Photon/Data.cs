@@ -9,13 +9,13 @@ public class Data : MonoBehaviour
 
     public int maxplayers;
 
-    public int HairIndex;
-    public int EyesIndex;
+    public int HeadIndex;
+    public int FaceIndex;
     public int TopsIndex;
     public int ShoesIndex;
-    public bool IsKnickersOn;
-    public bool IsShortsOn;
-    public bool IsMaskOn;
+    // public bool IsKnickersOn;
+    // public bool IsShortsOn;
+    // public bool IsMaskOn;
     public int spawnIndex;
     public Vector3 spawnPosition;
     public List<Vector3> playerSpawnPositions;
@@ -43,14 +43,11 @@ public class Data : MonoBehaviour
         maxplayers = mp;
     }
 
-    public void CharacterCustomise(int H, int E, int T, int si, bool K, bool S, bool M)
+    public void CharacterCustomise(int H, int T, int si, int f)
     {
-        HairIndex = H;
-        EyesIndex = E;
+        HeadIndex = H;
         TopsIndex = T;
         ShoesIndex = si;
-        IsKnickersOn = K;
-        IsShortsOn = S;
-        IsMaskOn = M;
+        FaceIndex = f;
     }
 }

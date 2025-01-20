@@ -10,6 +10,8 @@ public class MapScript : MonoBehaviour
 
   
     public List<Transform> PlayerSpawnPoints { get { return m_playerSpawnPonits; } }
+    public string playerPosJsonIndex;
+    string pathString;
 
     [HideInInspector]
     public List<Vector2> storedPositions; // List to store Vector2 positions
@@ -19,13 +21,15 @@ public class MapScript : MonoBehaviour
 
     private void Awake()
     {
-       
+        Gamemanager.instance.filePath = "positions" + playerPosJsonIndex;
+        print("filepathssssss : " + Gamemanager.instance.filePath);
     }
 
     // Method to store positions and save to JSON
     public void StorePositions()
     {
-        filePath = Path.Combine(Application.dataPath, "Resources/positions01.json");
+        pathString= ("Resources/positions" + playerPosJsonIndex + ".json");
+        filePath = Path.Combine(Application.dataPath, pathString/*"Resources/positions01.json"*/);
         EnsureFileExists();
 
         storedPositions = new List<Vector2>();

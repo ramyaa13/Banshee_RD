@@ -3,12 +3,13 @@ using System.Collections;
 using UnityEngine.UI;
 using Photon.Pun;
 using static UnityEngine.GraphicsBuffer;
+using GUPS.AntiCheat.Protected;
 
 
 public class HealthControllerLocal : MonoBehaviour
 {
     public Image fillImage;
-    public float health = 1;
+    public  ProtectedFloat health = 1;
     public float playerHeath;
 
     public Rigidbody2D rb;
@@ -107,9 +108,12 @@ public class HealthControllerLocal : MonoBehaviour
     public void HealthUpdate(float damage)
     {
         print(damage);
-        fillImage.fillAmount -= damage;
-        health -= damage;
-        CheckHealth();
+        if(Gamemanager.instance.enemyDied)
+        {
+            fillImage.fillAmount -= damage;
+            health -= damage;
+        }
+            CheckHealth();        
     }
 
     public void YouGotKilledBy(string name)

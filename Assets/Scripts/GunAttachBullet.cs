@@ -1,3 +1,4 @@
+#region commented code
 // using UnityEngine;
 
 // public class GunAttachBullet : MonoBehaviour
@@ -24,23 +25,23 @@
 //         }
 //     }
 // }
-
-
+#endregion
 
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
+using GUPS.AntiCheat.Protected;
 
 public class GunAttachBullet : MonoBehaviour, IPunOwnershipCallbacks
 {
     public GameObject gunPrefab; // Reference to the gun prefab
-    public float fireRate;
+    public ProtectedFloat fireRate;
     public GameObject bulletPrefab;
 
     private Transform bulletSpawnPoint;
-    private float nextFireTime;
+    private ProtectedFloat nextFireTime;
     private GunEquipController gunEquipController;
-    public bool isGunTaken;
+    public ProtectedBool isGunTaken;
 
     private PhotonView photonView;
     Rigidbody2D rb;

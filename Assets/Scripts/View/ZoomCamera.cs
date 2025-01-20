@@ -4,13 +4,15 @@ using System.Drawing;
 using Color = UnityEngine.Color;
 using Photon.Pun;
 using System.Collections.Generic;
+using GUPS.AntiCheat.Protected;
+
 
 public class ZoomCamera : MonoBehaviourPunCallbacks
 {
     //public Transform[] players; // Array of player Transforms
-    public float minZoom = 5f; // Minimum orthographic size
-    public float maxZoom = 10f; // Maximum orthographic size
-    public float zoomLerpSpeed = 5f; // Speed of zooming transition
+    [SerializeField] ProtectedFloat minZoom = 5f; // Minimum orthographic size
+    [SerializeField] ProtectedFloat maxZoom = 10f; // Maximum orthographic size
+    [SerializeField] ProtectedFloat zoomLerpSpeed = 5f; // Speed of zooming transition
 
     private CinemachineVirtualCamera virtualCamera;
 
@@ -31,11 +33,17 @@ public class ZoomCamera : MonoBehaviourPunCallbacks
 
     void Update()
     {
+        if (Gamemanager.instance.enemyLeft)
+        {
+            this.gameObject.SetActive(false);
+        }
+
         if (players.Count == 0)
             return;
 
         // Calculate the bounds of all players
-        playersBounds = CalculatePlayersBounds();
+        if(!Gamemanager.instance.enemyLeft)
+            playersBounds = CalculatePlayersBounds();
 
         // Calculate the aspect ratio of the players bounds
         if (playersBounds.extents.x > playersBounds.extents.y)
@@ -62,11 +70,14 @@ public class ZoomCamera : MonoBehaviourPunCallbacks
             return new Bounds();
 
         Bounds bounds = new Bounds(players[0].position, Vector3.zero);
+
         foreach (Transform player in players)
         {
             bounds.Encapsulate(player.position);
         }
+
         return bounds;
+
     }
 
     public override void OnPlayerEnteredRoom(Photon.Realtime.Player newPlayer)

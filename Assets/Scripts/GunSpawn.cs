@@ -1,12 +1,14 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
+using GUPS.AntiCheat.Protected;
+
 
 public class GunSpawn : MonoBehaviour
 {
     public Tilemap tilemap; // Reference to the Tilemap component
-    public int gridSizeX = 5;
-    public int gridSizeY = 5;
+    public ProtectedInt32 gridSizeX = 5;
+    public ProtectedInt32 gridSizeY = 5;
     public GameObject[] gunPrefabs;
 
     public int numberOfGuns = 6;

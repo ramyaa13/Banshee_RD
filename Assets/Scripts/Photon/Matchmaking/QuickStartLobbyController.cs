@@ -5,6 +5,9 @@ using Photon.Pun;
 using Photon.Realtime;
 using TMPro;
 using UnityEngine.UI;
+using GUPS.AntiCheat.Protected;
+
+
 
 public class QuickStartLobbyController : MonoBehaviourPunCallbacks
 {
@@ -18,7 +21,6 @@ public class QuickStartLobbyController : MonoBehaviourPunCallbacks
 
     [SerializeField]
     public int roomMaxPlayer =  4;
-
     //Menu Manager
     [SerializeField]
     private TMP_InputField UserNameInput;
@@ -284,7 +286,7 @@ public class QuickStartLobbyController : MonoBehaviourPunCallbacks
     {
         CharacterCustomPanel.SetActive(false);
         CharacterCustomAvatar.SetActive(false);
-        Data.instance.CharacterCustomise(CC.HairIndex, CC.EyesIndex, CC.TopsIndex, CC.ShoesIndex, CC.IsKnickersOn, CC.IsShortsOn, false);
+        Data.instance.CharacterCustomise(CC.HeadIndex, CC.TopsIndex, CC.ShoesIndex, CC.FaceIndex);
         MenuPanel.SetActive(true);
     }
 

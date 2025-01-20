@@ -1,20 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using GUPS.AntiCheat.Protected;
+
 
 public class PlayerMovement : MonoBehaviour
 {
     private float horizontal;
-    public float speed = 8f;
-    public float jumpingPower = 10f;
+    public ProtectedFloat speed = 8f;//14
+    public ProtectedFloat jumpingPower = 10f;//15
     private bool isfacingRight = false;
 
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform groundCheck;
-    [SerializeField] private LayerMask groundLayer;
-
-
- 
+    [SerializeField] private LayerMask groundLayer; 
 
     // Update is called once per frame
     void Update()

@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Animations;
 using Photon.Realtime;
+using GUPS.AntiCheat.Protected;
+
 /// <summary>
 /// A component that handles all player movement.
 /// </summary>
@@ -11,14 +13,14 @@ public class PlayerMovementController : MonoBehaviour, IPunObservable
 
     [Header("Movement")]
     //public float MovementSpeed = 100.0f;
-    public float GroundedBufferTime = 0.15f;
-    public float walkSpeed = 10f;
-    public float runSpeed = 25f;
+    [SerializeField] ProtectedFloat GroundedBufferTime = 0.15f;//0.25
+    [SerializeField] ProtectedFloat walkSpeed = 10f;//9
+    [SerializeField] ProtectedFloat runSpeed = 25f;//13
     // public ParticleSystem FootstepParticles;
 
     [Header("Jumping")]
-    public float JumpBufferTime = 0.5f;
-    public float JumpForce = 400.0f;
+    public float JumpBufferTime = 0.5f;//2.5
+    [SerializeField] ProtectedFloat JumpForce = 400.0f;//1600
     private bool IsJumping = false;
     //public float GravityScale = 100.0f;
     //public float FallGravityMultiplier = 3.0f;
@@ -30,8 +32,8 @@ public class PlayerMovementController : MonoBehaviour, IPunObservable
 
     [Header("Projectile Collision")]
     //  public ParticleSystem BloodParticles;
-    public float KnockbackForce = 2000f;
-    public float KnockbackTime = 0.25f;
+    public float KnockbackForce = 2000f;//2000
+    public float KnockbackTime = 0.25f;//0.25
 
     private Rigidbody2D rb;
     public Animator PlayerAnimator;
@@ -51,7 +53,7 @@ public class PlayerMovementController : MonoBehaviour, IPunObservable
     //private bool falling;
     private PhotonView photonView;
 
-    public float ResetTimeAmount = 1f;
+    public float ResetTimeAmount = 1f;//0.3
     private bool DisableInputs;
     //private bool isRunning;
     //private bool isDead;
@@ -59,6 +61,7 @@ public class PlayerMovementController : MonoBehaviour, IPunObservable
     private float horizontalInput;
 
     private Vector3 smoothMovement;
+    private ProtectedFloat currentSpeed;
     private readonly string P_Player = "Player";
 
 
@@ -122,11 +125,20 @@ public class PlayerMovementController : MonoBehaviour, IPunObservable
 
                 // Player movement
                 horizontalInput = Input.GetAxis("Horizontal");
-                //bool isRunning = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-                //isRunning = true;
-                // Adjust speed based on running
-                float currentSpeed = walkSpeed; // 0 OR 1
-                //float currentSpeed = 10; // runSpeed;  // Check FM
+
+                if (Gamemanager.instance.LocalPlayer.isBoostActive)
+                {
+                    if (horizontalInput != 0)
+                        rb.gameObject.GetComponent<BansheePlayer>().speedBostPS.SetActive(true);
+                    else
+                        rb.gameObject.GetComponent<BansheePlayer>().speedBostPS.SetActive(false);
+
+                    currentSpeed = runSpeed; // 0 OR 1
+                }
+                else
+                {
+                    currentSpeed = walkSpeed; // 0 OR 1
+                }
 
                 Vector2 moveDirection = new Vector2(horizontalInput, 0f);
                 rb.velocity = new Vector2(moveDirection.x * currentSpeed, rb.velocity.y); // Check FM

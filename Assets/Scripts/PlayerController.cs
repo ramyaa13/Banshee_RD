@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using GUPS.AntiCheat.Protected;
 
 public class PlayerController : MonoBehaviour
 {
@@ -7,8 +8,8 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded;
 
     public Tilemap tilemap; // Reference to the Tilemap component
-    public int gridSizeX = 5;
-    public int gridSizeY = 5;
+    public ProtectedInt32 gridSizeX = 5;
+    public ProtectedInt32 gridSizeY = 5;
     public GameObject playerPrefab; // Reference to the player prefab
 
     private GameObject playerInstance;

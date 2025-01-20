@@ -16,6 +16,7 @@ public class DeathZone : MonoBehaviour
         {
             if (target.tag == "Player")
             {
+                target.transform.GetComponent<BansheePlayer>().speedBostPS.SetActive(false);
                 target.GetComponent<HealthController>().photonView.RPC("HealthUpdate", RpcTarget.AllBuffered, 1.0f);
                 float enemyHealth = target.GetComponent<HealthController>().health;
                 Debug.Log(target.Owner + "enemy health name" + enemyHealth);

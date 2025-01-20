@@ -29,6 +29,8 @@ public class Sword : MonoBehaviour
         capsuleCollider2D.enabled = state;
         if (state)
             Invoke("DisableIt", 0.8f);
+
+        Debug.Log("enabled");
     }
 
     private void DisableIt()
@@ -47,11 +49,17 @@ public class Sword : MonoBehaviour
         {
             if (target.tag == "Player")
             {
-                float enemyHealth = target.GetComponent<HealthController>().health;
+                print("wertwertwert_____triggered__3");
                 target.RPC("HealthUpdate", RpcTarget.AllBuffered, Damage);
+                float enemyHealth = target.GetComponent<HealthController>().health;
 
-                if (enemyHealth < 0.1)
+                Debug.Log("ENEMY HEALTH = " + enemyHealth);
+
+                if (enemyHealth <= 0)
                 {
+                    Debug.Log("wertwertwert_____triggered_____dead");
+                    Gamemanager.instance.enemyDied = false;
+
                     Gamemanager.instance.UpdateKillCount();
                     Player GotKilled = target.Owner;
                     target.GetComponent<HealthController>().photonView.RPC("YouGotKilledBy", GotKilled, "KillerName");

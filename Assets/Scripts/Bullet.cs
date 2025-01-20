@@ -1,3 +1,4 @@
+#region commented
 // using UnityEngine;
 
 // public class Bullet : MonoBehaviour
@@ -129,18 +130,18 @@
 //         Destroy(gameObject);
 //     }
 // }
-
-
-
+#endregion
 
 using System.Collections;
 using UnityEngine;
 using Photon.Pun;
+using GUPS.AntiCheat.Protected;
+
 public class Bullet : MonoBehaviourPun
 {
-    public float speed;
-    public float lifetime =1f;
-    public float damage = 20f;
+    public ProtectedFloat speed;
+    public ProtectedFloat lifetime =1f;
+    public ProtectedFloat damage = 20f;
     public LayerMask collisionLayer;
     // public Transform referenceTransform;
     private Rigidbody2D rb;
@@ -159,8 +160,7 @@ public class Bullet : MonoBehaviourPun
             gunController = FindObjectOfType<WeaponController>(); // Find GunEquipController in the scene
             BulletFire();
         }
-
-        
+        print("buuuuuullllleeeeetttttt" + this.transform.name);        
     }
 
     private void Update()
@@ -177,6 +177,7 @@ public class Bullet : MonoBehaviourPun
 
             transform.up = direction;
             rb.velocity = direction * speed;
+            print("qweqwrtqwrtqwrtrtqwr - velocity=" + rb.velocity);
             StartCoroutine(DestroyBullet());
             //Destroy(gameObject, lifetime);
         }

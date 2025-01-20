@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using GUPS.AntiCheat.Protected;
+
 
 public class BulletFireLocal : MonoBehaviour
 {
     public bool MovingDirection = false;
-    public float MoveSpeed = 100f;
-    public float DestroyTime = 2f;
+    public ProtectedFloat MoveSpeed = 100f;
+    public ProtectedFloat DestroyTime = 2f;
 
     public float BulleteDamage;
     private int direction;

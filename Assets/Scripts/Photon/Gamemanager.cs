@@ -12,6 +12,7 @@ using UnityEngine.SceneManagement;
 using ExitGames.Client.Photon;
 using static UnityEngine.EventSystems.EventTrigger;
 using System.IO;
+using GUPS.AntiCheat.Protected;
 
 public class Gamemanager : MonoBehaviourPunCallbacks
 {
@@ -62,13 +63,18 @@ public class Gamemanager : MonoBehaviourPunCallbacks
     [HideInInspector]
     public BansheePlayer LocalPlayer;
     [HideInInspector]
-    public int KillCount;
+    public ProtectedInt32 KillCount;
     [HideInInspector]
-    public int Deathcount;
+    public ProtectedInt32 Deathcount;
     [HideInInspector]
-    public int GemsCount;
+    public ProtectedInt32 GemsCount;
     [HideInInspector]
     public int isPlayerDead;
+    [HideInInspector]
+    public bool enemyDied = false;
+    [HideInInspector] public bool enemyLeft = false;
+
+
 
     public TextMeshProUGUI KillCountText;
     public TextMeshProUGUI KillFeedtext;
@@ -90,9 +96,12 @@ public class Gamemanager : MonoBehaviourPunCallbacks
     private int roomMaxPlayers;
     private List<Transform> playerSpawnPonits;
 
-    private string filePath;
+    public string filePath;
     private List<Vector2> loadedPositions; // List to store loaded Vector2 positions
 
+    public ProtectedBool isSheildActive = false;
+    private ProtectedBool respawnPlayerSetDone;
+    private Vector2 spawnPosition;
 
     private void Awake()
     {
@@ -151,10 +160,18 @@ public class Gamemanager : MonoBehaviourPunCallbacks
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
         print("player left ");
+        enemyLeft = true;
+        
+        GameOver();
+
         // Find the GameObject associated with the leaving player and destroy it
         if (otherPlayer != null)
         {
+            //print("otherplayer name : " + otherPlayer);
             GameObject playerObject = FindPlayerObjectByPhotonPlayer(otherPlayer);
+            /*print("playerobject : " + playerObject.name);
+            print("playerobj not null : " + playerObject != null);*/
+
             if (playerObject != null)
             {
                 PhotonNetwork.Destroy(playerObject);
@@ -216,12 +233,39 @@ public class Gamemanager : MonoBehaviourPunCallbacks
 
     public void StartRespawn()
     {
+        print("respawn pos bool check : " + respawnPlayerSetDone);
+        while(!respawnPlayerSetDone)//if
+        {
+
+            float randomSpawn = Random.Range(-4.3f, 4.3f);
+            //print("respawn : " + randomSpawn);
+            //new
+            spawnPosition = loadedPositions[Random.Range(0, loadedPositions.Count)];
+
+            spawnPosition = new Vector2(spawnPosition.x + randomSpawn, spawnPosition.y/* + 3*/);
+
+
+            respawnPlayerSetDone = true;
+
+            LocalPlayer.GetComponent<PhotonView>().RPC("ColliderEnabler", RpcTarget.AllBuffered);
+
+            LocalPlayer.transform.position = spawnPosition;/*new Vector2(PlayerPrefab.transform.position.x + randomSpawn, PlayerPrefab.transform.position.y);*/
+            LocalPlayer.transform.rotation = Quaternion.identity;
+
+        }
+
         TimeAmount -= Time.deltaTime;
         spawnTimer.text = "Respawn in : " + TimeAmount.ToString("F0");
         if(TimeAmount <= 3)
         {
             LocalPlayer.GetComponent<HealthController>().RevivePlayer();
             LocalPlayer.GetComponent<PhotonView>().RPC("Revive", RpcTarget.AllBuffered);
+
+            if (LocalPlayer.isSheildActive)
+            {
+                LocalPlayer.photonView.RPC("ActivateShild", RpcTarget.AllBuffered, false);//shieldhealthmethod
+                LocalPlayer.healthController.shieldHealth = 1;
+            }
         }
 
         if (TimeAmount <= 0)
@@ -237,12 +281,17 @@ public class Gamemanager : MonoBehaviourPunCallbacks
 
             LocalPlayer.playerProfileData.isDead = false;
             float randomSpawn = Random.Range(-5.5f, 5.5f);
-
-            LocalPlayer.transform.position = new Vector2(PlayerPrefab.transform.position.x + randomSpawn, PlayerPrefab.transform.position.y);
-            LocalPlayer.transform.rotation = Quaternion.identity;
+            print("respawn : " + randomSpawn);
+            // LocalPlayer.transform.position = new Vector2(PlayerPrefab.transform.position.x + randomSpawn, PlayerPrefab.transform.position.y);
+            // LocalPlayer.transform.rotation = Quaternion.identity;
             isPlayerDead = 0;
             SetHashes();
         }
+    }
+
+    public void EquipWeaponMobileSmartPhone()
+    {
+        LocalPlayer.GetComponent<WeaponController>().EquipWeapon();
     }
 
     public void SetPlayerState(int x)
@@ -275,6 +324,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
                 LocalPlayer.isdead = false;
                 break;
         }
+        print("swwwwwooorrrdddd_" + x);
     }
     public void EnableRespawn()
     {
@@ -289,43 +339,14 @@ public class Gamemanager : MonoBehaviourPunCallbacks
     {
         print("Player loaded");
         LevelUI.SetActive(false);
-        float randomSpawn = Random.Range(-5.5f, 5.5f);
+        float randomSpawn = Random.Range(-3.5f, 3.5f);
 
         Vector2 spawnPosition = new Vector2();
         List<Vector2> spawnPositionList = new List<Vector2>();
 
-        if (PhotonNetwork.IsMasterClient)
-        {
-              //  Debug.LogError("Spawn MASTER PLAYER index found!");
-            //spawnPosition = playerSpawnPonits[Random.Range(0, playerSpawnPonits.Count)].position;
-        }
-        else
-        {
-            string spawnIndexObj;
-            //if (PhotonNetwork.CurrentRoom.CustomProperties.TryGetValue("SpawnPosition", out spawnIndexObj))
-            //{
-                //spawnPositionList = JsonUtility.FromJson<List<Vector2>>(spawnIndexObj.ToString());
-                //spawnPositionList = spawnIndexObj;// JsonUtility.FromJson<List<Vector2>>(spawnIndexObj.ToString());
-               /* string json = (string)PhotonNetwork.CurrentRoom.CustomProperties["SpawnPosition"];
-                Debug.LogError("Spawn index found! "+json);
-                Vector2ListWrapper wrapper = JsonUtility.FromJson<Vector2ListWrapper>(json);
-                List<Vector2> retrievedList = wrapper.vector2List;
-
-                spawnPosition = retrievedList[Random.Range(0, retrievedList.Count)];
-                */
-               //spawnPosition = (Vector3)spawnIndexObj;
-            //}
-            //else
-            //{
-            //    Debug.LogError("Spawn index not found!");
-            //}
-        }
-        // spawnPosition.x += randomSpawn;
-
-
         LoadFromJson();
         spawnPosition = loadedPositions[Random.Range(0, loadedPositions.Count)];
-        spawnPosition = new Vector2(spawnPosition.x + randomSpawn, spawnPosition.y + 10);
+        spawnPosition = new Vector2(spawnPosition.x + randomSpawn, spawnPosition.y+2);//y+10
         //PhotonNetwork.Instantiate(PlayerPrefab.name, new Vector2(PlayerPrefab.transform.position.x * randomSpawn, PlayerPrefab.transform.position.y + 10), Quaternion.identity, 0);
         PhotonNetwork.Instantiate(PlayerPrefab.name, spawnPosition, Quaternion.identity, 0);
 
@@ -339,7 +360,8 @@ public class Gamemanager : MonoBehaviourPunCallbacks
     // Method to load the positions from the JSON file
     private void LoadFromJson()
     {
-        filePath = "positions01";
+        //filePath = "positions01";
+        print("Filepath from mapScript : " + filePath);
 
         TextAsset jsonFile = Resources.Load<TextAsset>(filePath);
         if (jsonFile != null)
@@ -546,6 +568,7 @@ public class Gamemanager : MonoBehaviourPunCallbacks
     public void UpdateHealth(float x)
     {
         x = x * 100;
+        x = Mathf.Min(100, x);
         LocalPlayer.playerProfileData.health = x;
         HealthText.text = x.ToString();
     }
@@ -586,18 +609,19 @@ public class Gamemanager : MonoBehaviourPunCallbacks
     {
         try
         {
+            int kc = KillCount;
+            int dc = Deathcount;
+            int gc = GemsCount;
+
             Hashtable Hash = PhotonNetwork.LocalPlayer.CustomProperties;
-            Hash["Kills"] = KillCount;
-            Hash["Deaths"] = Deathcount;
-            Hash["Gems"] = GemsCount;
+            Hash["Kills"] = kc;//KillCount
+            Hash["Deaths"] = dc;//Deathcount
+            Hash["Gems"] = gc;//GemsCount
             Hash["IsplayerDead"] = isPlayerDead;
-            Hash["HairIndex"] = Data.instance.HairIndex;
-            Hash["EyeIndex"] = Data.instance.EyesIndex;
+            Hash["HeadIndex"] = Data.instance.HeadIndex;
             Hash["TopIndex"] = Data.instance.TopsIndex;
             Hash["ShoesIndex"] = Data.instance.ShoesIndex;
-            Hash["IsKnickersOn"] = Data.instance.IsKnickersOn;
-            Hash["IsShortsOn"] = Data.instance.IsShortsOn;
-            Hash["IsMaskOn"] = Data.instance.IsMaskOn;
+            Hash["FaceIndex"] = Data.instance.ShoesIndex;
           
             PhotonNetwork.LocalPlayer.SetCustomProperties(Hash);
         }

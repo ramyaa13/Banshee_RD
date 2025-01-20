@@ -28,15 +28,17 @@ public class ObjectSpawner : MonoBehaviour
     public GameObject[] WeaponPrefabs;
     // public GameObject[] spawnedGuns;
     private GameObject[] spawnedGuns;
+    private GameObject[] spawnedSheilds;
 
-    public float ShieldProbablity = 0.2f;
-    public float SprintShoesProbablity = 0.1f;
+    public float ShieldProbablity = 0.2f;//
+    public float SprintShoesProbablity = 0.1f;//
 
     public int MaxObjects = 20;
+    public int MaxShields = 3;
     public int MaxWeaponObjects = 6;
     //public int maxGunsToSpawn = 6; 
-    public float ShieldLifeTime = 10f;
-    public float SpawnInterval = 0.5f;
+    public float ShieldLifeTime = 10f;//
+    public float SpawnInterval = 0.5f;//
 
     private List<Vector3> validSpawnPoints = new List<Vector3>();
     private List<GameObject> spawnObjects = new List<GameObject>();
@@ -55,9 +57,10 @@ public class ObjectSpawner : MonoBehaviour
     public GameObject selectedBackgroundPrefab;
 
     private int testInt;
+    private List<GameObject> usedSpawnPoints = new List<GameObject>();
 
 
-  
+
     // Start is called before the first frame update
     void Start()
     {
@@ -115,7 +118,7 @@ public class ObjectSpawner : MonoBehaviour
     public void SpawnBG(int i)
     {
         DestroyBackground();
-        i = 1;
+       // i = 1;
         InstantiateBackground(i);
     }
 
@@ -243,9 +246,10 @@ public class ObjectSpawner : MonoBehaviour
 
                 // SpawnBackground();
 
-                SpawnGameObjects();
                 SpawnBG(level);
+                SpawnGameObjects();
                 SpawnGunsRandomly();
+                print("guuuuuunnnnnnsssss");
                 ShuffleObjectPool(); // Shuffle the pool initially
                 GatherValidPoints();
 
@@ -307,7 +311,7 @@ public class ObjectSpawner : MonoBehaviour
     {
 
         MaxWeaponObjects = 6;
-        isOSpawning = true;
+        // isOSpawning = true;
         isWSpawning = true;
 
         StartCoroutine(SpawnObjectsIfNeeded());
@@ -343,11 +347,12 @@ public class ObjectSpawner : MonoBehaviour
     }
     private IEnumerator SpawnObjectsIfNeeded()
     {
-        while (isOSpawning)
-        {
-            SpawnObjects();
-            yield return new WaitForSeconds(SpawnInterval);
-        }
+            SpawnObjectsNew();
+            yield return new WaitForSeconds(0);
+        // while (isOSpawning)
+        // {
+        //     //SpawnObjects();//old code uncomment if needed
+        // }
     }
     private IEnumerator SpawnWeaponObjectsIfNeeded()
     {
@@ -382,8 +387,67 @@ public class ObjectSpawner : MonoBehaviour
         }
     }
 
+    private void SpawnObjectsNew()
+    {
+        GameObject[] Points = GameObject.FindGameObjectsWithTag("SpawnPoints");
+        print("tags finding : " + GameObject.FindGameObjectsWithTag("SpawnPoints"));
+        print("point length" + Points.Length);
+        GameObject randomPoint = Points[Random.Range(0, Points.Length)];
+
+        int randomIndex = Random.Range(0, ObjectPrefabs.Length);
+
+        if(randomPoint.transform.childCount == 0)
+        {
+            if (!usedSpawnPoints.Contains(randomPoint))
+            {
+                GameObject spawnedShields = PhotonNetwork.Instantiate(ObjectPrefabs[randomIndex].gameObject.name, randomPoint.transform.position, Quaternion.identity);
+                spawnedShields.transform.SetParent(randomPoint.transform);
+                spawnedShields.transform.localScale = Vector3.one * 1f;
+            }
+            //print("RandomPoint.Child.Name : " + randomPoint.transform.childCount);
+            usedSpawnPoints.Add(randomPoint);
+        }
+
+        ///Old Code
+       /* GameObject[] Points = GameObject.FindGameObjectsWithTag("SpawnPoints");
+
+        int spawnedShieldCount = 0;
+        spawnedSheilds = new GameObject[MaxShields];
+
+
+        while (spawnedShieldCount < MaxShields)
+        {
+            GameObject randomPoint = Points[Random.Range(0, Points.Length)];
+
+            // Check if the spawn point is already used
+            if (usedSpawnPoints.Contains(randomPoint))
+                continue; // Skip this iteration if the spawn point is already used
+
+            if (randomPoint.transform.childCount == 0)
+            {
+                foreach (var shields in ObjectPrefabs)
+                {
+                    GameObject spawnedShields = PhotonNetwork.Instantiate(shields.gameObject.name, randomPoint.transform.position, Quaternion.identity);
+                    spawnedShields.transform.localScale = Vector3.one * 0.2f;
+                    spawnedGuns[spawnedShieldCount] = spawnedShields;
+
+                    //Instantiate(weapon.gameObject, randomPoint.transform.position, Quaternion.identity);
+                    break;
+
+                }
+                // Instantiate the selected gun prefab at the position of the spawn point
+                //GameObject spawnedGun = PhotonNetwork.Instantiate(selectedGunPrefab.name, randomPoint.transform.position, Quaternion.identity);
+                spawnedShieldCount++;
+                usedSpawnPoints.Add(randomPoint); // Mark this spawn point as used
+
+            }
+        }*/
+    }
     private void SpawnObjects()
     {
+
+        print("active obj conut : " + ActiveObjectsCount());
+        
         if (ActiveObjectsCount() == MaxObjects)
         {
             isOSpawning = false;
@@ -420,12 +484,19 @@ public class ObjectSpawner : MonoBehaviour
             // int randomGunIndex = Random.Range(0, ObjectPrefabs.Length);
             //Instantiate
             //GameObject gameObject = Instantiate(ObjectPrefabs[(int)objectType], SpawnPositions, Quaternion.identity);
+
             if (selectedObject != null)
             {
+                int Scount = 0;//new code if old code does not work
+                //use ObjectPrefabs[Scount].name in place of ObjectPrefabs[(int)objectType].name
+                //if ObjectPrefabs[(int)objectType].name does not work
+
                 GameObject gameObject = PhotonNetwork.Instantiate(ObjectPrefabs[(int)objectType].name, SpawnPositions, Quaternion.identity);
                 gameObject.transform.SetParent(ObjectContainer, false);
                 spawnObjects.Add(gameObject);
                 OverallObjects.Add(gameObject);
+
+                Scount++;//new
             }
             ////Destroy Shield only after time
             //if(objectType != ObjectType.Weapon)
@@ -539,10 +610,88 @@ public class ObjectSpawner : MonoBehaviour
         }
         Debug.Log(validSpawnPoints.Count + " valid spawn points");
     }
-
     void SpawnGunsRandomly()
     {
-       // testInt++;
+        // testInt++;
+        GameObject[] Points = GameObject.FindGameObjectsWithTag("SpawnPoints");
+        //print("Points :" + Points.Length);
+
+        if (Points.Length == 0 || WeaponPrefabs.Length == 0)
+        {
+            Debug.LogError("No spawn points or gun prefabs assigned.");
+            return;
+        }
+
+        int gunsSpawned = 0;
+        spawnedGuns = new GameObject[MaxWeaponObjects];
+
+        //List<GameObject> usedSpawnPoints = new List<GameObject>(); // Track used spawn points
+
+        //print("dsjdghgsmaxobject: " + MaxWeaponObjects);
+
+        while (gunsSpawned < MaxWeaponObjects)
+        {
+            GameObject randomPoint = Points[Random.Range(0, Points.Length)];
+
+            // Check if the spawn point is already used
+            if (usedSpawnPoints.Contains(randomPoint))
+                continue; // Skip this iteration if the spawn point is already used
+
+            //
+            var sortedWeapons = WeaponPrefabs.OrderByDescending(w => w.GetComponent<Weapon>().priority).ToArray();
+            int totalWeight = sortedWeapons.Sum(w => w.GetComponent<Weapon>().priority);
+            int randomWeight = Random.Range(0, totalWeight);
+
+            if (randomPoint.transform.childCount == 0)
+            {
+                foreach (var weapon in sortedWeapons)
+                {
+                    if (randomWeight < weapon.GetComponent<Weapon>().priority)
+                    {
+                        GameObject spawnedGun = PhotonNetwork.Instantiate(weapon.gameObject.name, randomPoint.transform.position, Quaternion.identity);
+                        spawnedGun.transform.SetParent(randomPoint.transform);
+                        spawnedGun.transform.localScale = Vector3.one * 1f;
+                        spawnedGuns[gunsSpawned] = spawnedGun;
+
+                        //Instantiate(weapon.gameObject, randomPoint.transform.position, Quaternion.identity);
+                        break;
+                    }
+                    else
+                    {
+                        randomWeight -= weapon.GetComponent<Weapon>().priority;
+                    }
+                }
+                // Instantiate the selected gun prefab at the position of the spawn point
+                //GameObject spawnedGun = PhotonNetwork.Instantiate(selectedGunPrefab.name, randomPoint.transform.position, Quaternion.identity);
+                gunsSpawned++;
+                usedSpawnPoints.Add(randomPoint); // Mark this spawn point as used
+            }
+            //
+            #region commented
+            /*
+            int randomGunIndex = Random.Range(0, WeaponPrefabs.Length);
+            GameObject selectedGunPrefab = WeaponPrefabs[randomGunIndex];
+
+            // Check if the spawn point is empty before instantiating a gun
+            if (randomPoint.transform.childCount == 0)
+            {
+                //Instantiate the selected gun prefab at the position of the spawn point
+                GameObject spawnedGun = PhotonNetwork.Instantiate(selectedGunPrefab.name, randomPoint.transform.position, Quaternion.identity);
+                spawnedGun.transform.localScale = Vector3.one * 0.2f;
+                spawnedGuns[gunsSpawned] = spawnedGun;
+                gunsSpawned++;
+                usedSpawnPoints.Add(randomPoint); // Mark this spawn point as used
+            }*/
+
+            //Debug.LogError(gunsSpawned + " total gun spawned " + testInt);
+            #endregion
+        }   
+    }
+
+/*
+    void SpawnGunsRandomly()
+    {
+        // testInt++;
         GameObject[] Points = GameObject.FindGameObjectsWithTag("SpawnPoints");
 
         if (Points.Length == 0 || WeaponPrefabs.Length == 0)
@@ -553,7 +702,10 @@ public class ObjectSpawner : MonoBehaviour
 
         int gunsSpawned = 0;
         spawnedGuns = new GameObject[MaxWeaponObjects];
+
         List<GameObject> usedSpawnPoints = new List<GameObject>(); // Track used spawn points
+
+        print("dsjdghgsmaxobject: " + MaxWeaponObjects);
 
         while (gunsSpawned < MaxWeaponObjects)
         {
@@ -563,24 +715,55 @@ public class ObjectSpawner : MonoBehaviour
             if (usedSpawnPoints.Contains(randomPoint))
                 continue; // Skip this iteration if the spawn point is already used
 
-            int randomGunIndex = Random.Range(0, WeaponPrefabs.Length);
-            GameObject selectedGunPrefab = WeaponPrefabs[randomGunIndex];
+            //
+            var sortedWeapons = WeaponPrefabs.OrderByDescending(w => w.GetComponent<Weapon>().priority).ToArray();
+            int totalWeight = sortedWeapons.Sum(w => w.GetComponent<Weapon>().priority);
+            int randomWeight = Random.Range(0, totalWeight);
 
-            // Check if the spawn point is empty before instantiating a gun
             if (randomPoint.transform.childCount == 0)
             {
+                foreach (var weapon in sortedWeapons)
+                {
+                    if (randomWeight < weapon.GetComponent<Weapon>().priority)
+                    {
+                        GameObject spawnedGun = PhotonNetwork.Instantiate(weapon.gameObject.name, randomPoint.transform.position, Quaternion.identity);
+                        spawnedGun.transform.localScale = Vector3.one * 0.2f;
+                        spawnedGuns[gunsSpawned] = spawnedGun;
+
+                        //Instantiate(weapon.gameObject, randomPoint.transform.position, Quaternion.identity);
+                        break;
+                    }
+                    else
+                    {
+                        randomWeight -= weapon.GetComponent<Weapon>().priority;
+                    }
+                }
                 // Instantiate the selected gun prefab at the position of the spawn point
-                GameObject spawnedGun = PhotonNetwork.Instantiate(selectedGunPrefab.name, randomPoint.transform.position, Quaternion.identity);
-                spawnedGun.transform.localScale = Vector3.one * 0.2f;
-                spawnedGuns[gunsSpawned] = spawnedGun;
+                //GameObject spawnedGun = PhotonNetwork.Instantiate(selectedGunPrefab.name, randomPoint.transform.position, Quaternion.identity);
                 gunsSpawned++;
                 usedSpawnPoints.Add(randomPoint); // Mark this spawn point as used
             }
+            //
+            #region commented
+            
+            // int randomGunIndex = Random.Range(0, WeaponPrefabs.Length);
+            // GameObject selectedGunPrefab = WeaponPrefabs[randomGunIndex];
 
-            //Debug.LogError(gunsSpawned + " total gun spawned " + testInt);
+            // // Check if the spawn point is empty before instantiating a gun
+            // if (randomPoint.transform.childCount == 0)
+            // {
+            //     //Instantiate the selected gun prefab at the position of the spawn point
+            //     GameObject spawnedGun = PhotonNetwork.Instantiate(selectedGunPrefab.name, randomPoint.transform.position, Quaternion.identity);
+            //     spawnedGun.transform.localScale = Vector3.one * 0.2f;
+            //     spawnedGuns[gunsSpawned] = spawnedGun;
+            //     gunsSpawned++;
+            //     usedSpawnPoints.Add(randomPoint); // Mark this spawn point as used
+            // }
+
+            // //Debug.LogError(gunsSpawned + " total gun spawned " + testInt);
+            #endregion
         }
-    }
-
+    }*/
 
     void DestroySpawnedGuns()
     {
